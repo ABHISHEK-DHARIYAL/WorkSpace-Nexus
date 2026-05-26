@@ -1,0 +1,17 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+// Standardized Responsive Breakpoint Constants (in pixels)
+export const BREAKPOINTS = {
+  xs: 320,
+  sm: 480,
+  md: 768,
+  lg: 1024,
+  xl: 1280,
+  '2xl': 1536,
+  '3xl': 1920,
+} as const;
+
+export type Breakpoint = keyof typeof BREAKPOINTS;

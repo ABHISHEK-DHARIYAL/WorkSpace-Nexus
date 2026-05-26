@@ -1,0 +1,409 @@
+@import "tailwindcss";
+@import "./styles/responsive.css";
+@variant dark (&:where(.dark, .dark *));
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-primary: var(--color-indigo-600);
+  --color-primary-hover: var(--color-indigo-700);
+}
+
+body {
+  @apply bg-[#f8fafc] text-slate-800 font-sans;
+}
+
+/* Tiptap Annotation Styles (using data-attributes) */
+[data-annotation-type="highlight"], .user-highlight {
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  transition: none;
+  display: inline !important;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+[data-annotation-type="underline"], .user-underline {
+  padding: 0;
+  margin: 0;
+  transition: none;
+  display: inline !important;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+/* Ensure marks from Tiptap display correctly */
+mark {
+  color: inherit;
+  background-color: #FFFF00; /* Fallback */
+}
+
+/* TipTap Editor Styles */
+.ProseMirror {
+  @apply min-h-[500px] outline-none;
+}
+
+.ProseMirror mark {
+  @apply bg-yellow-200 transition-none;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
+
+.prose h1, .prose h2, .prose h3 {
+  @apply font-bold tracking-tight;
+  color: inherit;
+}
+
+.prose:not(.prose-invert) h1, 
+.prose:not(.prose-invert) h2, 
+.prose:not(.prose-invert) h3 {
+  @apply text-slate-900;
+}
+
+.markdown-body {
+  @apply text-slate-700 leading-relaxed;
+}
+
+.vertical-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+
+/* TipTap & Prose Table Styles */
+.ProseMirror table,
+.prose table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 2rem 0;
+  overflow: hidden;
+  border: 1px solid #ced4da;
+}
+
+.ProseMirror table td,
+.ProseMirror table th,
+.prose table td,
+.prose table th {
+  min-width: 1em;
+  border: 1px solid #ced4da;
+  padding: 12px 15px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+  text-align: left;
+}
+
+.ProseMirror table th,
+.prose table th {
+  font-weight: bold;
+  background-color: #f8fafc;
+  color: #1e293b;
+}
+
+.dark .ProseMirror table,
+.dark .prose table,
+.dark .ProseMirror table td,
+.dark .ProseMirror table th,
+.dark .prose table td,
+.dark .prose table th {
+  border-color: #3d3d3d;
+}
+
+.dark .ProseMirror table th,
+.dark .prose table th {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.dark .ProseMirror table td,
+.dark .prose table td {
+  color: #ffffff;
+}
+
+.table-responsive {
+  @apply my-8 rounded-xl border border-slate-200 overflow-hidden shadow-sm;
+}
+
+.dark .table-responsive {
+  @apply border-[#3d3d3d] shadow-none;
+}
+
+.highlight-scroll {
+  animation: scroll-highlight 2s ease-out;
+}
+
+@keyframes scroll-highlight {
+  0% { background-color: rgba(99, 102, 241, 0.2); }
+  100% { background-color: transparent; }
+}
+
+.ProseMirror table .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
+}
+
+.ProseMirror table .column-resize-handle {
+  position: absolute;
+  right: -2px; top: 0; bottom: 0;
+  width: 4px;
+  z-index: 20;
+  background-color: #adf;
+  pointer-events: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-slate-400/20 rounded-full hover:bg-slate-400/40 transition-colors;
+}
+
+/* Reader Mode Highlights */
+mark.user-highlight {
+  background-color: rgb(250 204 21 / 0.4);
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  transition: none;
+  display: inline;
+}
+
+mark.user-highlight:hover {
+  background-color: rgb(250 204 21 / 0.9);
+}
+
+mark.user-highlight.highlight-pink {
+  background-color: rgb(244 114 182 / 0.4);
+}
+mark.user-highlight.highlight-pink:hover {
+  background-color: rgb(244 114 182 / 0.9);
+}
+
+mark.user-highlight.highlight-green {
+  background-color: rgb(74 222 128 / 0.4);
+}
+mark.user-highlight.highlight-green:hover {
+  background-color: rgb(74 222 128 / 0.9);
+}
+
+mark.user-highlight.highlight-blue {
+  background-color: rgb(96 165 250 / 0.4);
+}
+mark.user-highlight.highlight-blue:hover {
+  background-color: rgb(96 165 250 / 0.9);
+}
+
+mark.user-underline {
+  background-color: transparent;
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--color-indigo-400);
+  cursor: pointer;
+  transition: none;
+  display: inline;
+  padding: 0;
+  margin: 0;
+}
+
+mark.user-underline:hover {
+  text-decoration-color: var(--color-indigo-600);
+  background-color: rgb(79 70 229 / 0.05);
+}
+
+.dark mark.user-underline {
+  text-decoration-color: var(--color-indigo-500);
+}
+
+.dark mark.user-underline:hover {
+  text-decoration-color: var(--color-indigo-400);
+  background-color: rgb(99 102 241 / 0.1);
+}
+
+.dark mark.user-highlight {
+  background-color: rgb(234 179 8 / 0.5);
+  color: #ffffff;
+  border-bottom-color: rgb(234 179 8 / 0.8);
+}
+
+.dark mark.user-highlight.highlight-pink {
+  background-color: rgb(219 39 119 / 0.5);
+  color: #ffffff;
+}
+
+.dark mark.user-highlight.highlight-green {
+  background-color: rgb(22 163 74 / 0.5);
+  color: #ffffff;
+}
+
+.dark mark.user-highlight.highlight-blue {
+  background-color: rgb(37 99 235 / 0.5);
+  color: #ffffff;
+}
+
+.dark .prose {
+  --tw-prose-body: #ffffff;
+  --tw-prose-headings: #ffffff;
+  --tw-prose-lead: #ffffff;
+  --tw-prose-links: #6366f1;
+  --tw-prose-bold: #ffffff;
+  --tw-prose-counters: #ffffff;
+  --tw-prose-bullets: #ffffff;
+  --tw-prose-hr: #3d3d3d;
+  --tw-prose-quotes: #ffffff;
+  --tw-prose-quote-borders: #3d3d3d;
+  --tw-prose-captions: #ffffff;
+  --tw-prose-code: #ffffff;
+  --tw-prose-pre-code: #ffffff;
+  --tw-prose-pre-bg: #1e293b;
+  --tw-prose-th-borders: #3d3d3d;
+  --tw-prose-td-borders: #3d3d3d;
+  color: #ffffff !important;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose p,
+.dark .prose li,
+.dark .prose strong,
+.dark .prose em {
+  color: #ffffff !important;
+}
+
+/* Print Styles */
+@media print {
+  .no-print,
+  button,
+  .fixed,
+  .absolute,
+  header,
+  .h-16,
+  [role="complementary"] {
+    display: none !important;
+  }
+  
+  .flex-grow, .overflow-y-auto {
+    overflow: visible !important;
+    height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  body, html {
+    background: white !important;
+    color: black !important;
+  }
+
+  .prose {
+    max-width: 100% !important;
+  }
+}
+
+/* ==========================================================================
+   📂 WORKSPACE HUB RESPONSIVE SIDEBAR STYLE MODULES
+   ========================================================================== */
+
+/* Enhanced Sidebar Layout and transition animations */
+.workspace-hub-sidebar {
+  transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1), 
+              width 350ms cubic-bezier(0.16, 1, 0.3, 1), 
+              background-color 300ms ease, 
+              box-shadow 300ms ease;
+}
+
+/* Small Screens Responsive Drawer Configurations */
+@media (max-width: 1023px) {
+  .workspace-hub-sidebar {
+    background-color: #ffffff;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  }
+  
+  .dark .workspace-hub-sidebar {
+    background-color: #15181e;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Top & Bottom Sub-panes Flex/Transitions */
+.workspace-hub-top-pane,
+.workspace-hub-bottom-pane {
+  transition: padding 300ms ease, border-color 300ms ease, opacity 300ms ease;
+}
+
+/* ==========================================================================
+   📂 PROSE INVERT & MIDNIGHT THEME READABILITY FIXES
+   ========================================================================== */
+
+/* Universal text contrast fallback for dark workspace editors & readers */
+.prose-invert,
+.prose-invert p,
+.prose-invert h1,
+.prose-invert h2,
+.prose-invert h3,
+.prose-invert h4,
+.prose-invert li,
+.prose-invert blockquote,
+.prose-invert strong,
+.prose-invert em,
+.prose-invert th,
+.prose-invert td,
+.prose-invert table,
+.prose-invert span,
+.prose-invert pre,
+.prose-invert code {
+  color: #f8fafc !important; /* Perfect high contrast white/slate-50 */
+}
+
+/* Specific placeholder text visibility for empty dark workspace paragraphs */
+.prose-invert p.is-editor-empty:first-child::before,
+.prose-invert .is-empty::before {
+  color: #475569 !important; /* Slate-600 */
+}
+
+/* Table header contrast adjustments for dark workspace structures */
+.prose-invert table th {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #3b4254 !important;
+}
+
+.prose-invert table td {
+  border-color: #3b4254 !important;
+}
+
+/* Bullet markers and numbering colors inside dark writing canvases */
+.prose-invert ul > li::before,
+.prose-invert ol > li::before {
+  background-color: #f8fafc !important;
+}
+
+.prose-invert li::marker,
+.prose-invert ol li::marker,
+.prose-invert ul li::marker {
+  color: #f8fafc !important;
+}
+

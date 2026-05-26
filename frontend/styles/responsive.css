@@ -1,0 +1,1310 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+:root {
+  /* Default typography sizing matching the exact custom clamp specs requested */
+  --scale-h1: clamp(1.5rem, 3vw, 3rem);
+  --scale-h2: clamp(1.1rem, 2vw, 2rem);
+  --scale-h3: clamp(0.95rem, 1.5vw, 1.5rem);
+  --scale-body: clamp(0.85rem, 1vw, 1.05rem);
+  --scale-small: clamp(0.65rem, 0.8vw, 0.8rem);
+
+  /* Central sizing defaults on desktop */
+  --scale-btn-height: 48px;
+  --scale-btn-px: 20px;
+  --scale-btn-font: 15px;
+  --scale-btn-radius: 14px;
+
+  --scale-icon-lg: clamp(16px, 1.8vw, 24px);
+  --scale-icon-sm: clamp(14px, 1.4vw, 18px);
+
+  --scale-card-p: 24px;
+  --scale-card-radius: 20px;
+  --scale-card-gap: 20px;
+
+  --scale-sidebar-w: 320px;
+
+  --scale-table-font: clamp(11px, 1.25vw, 14px);
+
+  --scale-nav-h: clamp(42px, 4vw, 56px);
+
+  --scale-input-h: clamp(36px, 3.5vw, 48px);
+  --scale-input-font: clamp(12px, 1.3vw, 15px);
+
+  --scale-modal-max-w: clamp(320px, 90vw, 720px);
+  --scale-modal-p: clamp(12px, 2.2vw, 28px);
+
+  --scale-spacing-gap: clamp(12px, 2vw, 24px);
+  --scale-spacing-p: clamp(12px, 2vw, 24px);
+}
+
+/* Perfect responsive breakpoints configuring exact values for sidebar, buttons, cards */
+@media (min-width: 1024px) {
+  :root {
+    --scale-sidebar-w: 320px;
+    --scale-btn-height: 48px;
+    --scale-btn-px: 20px;
+    --scale-btn-font: 15px;
+    --scale-btn-radius: 14px;
+    --scale-card-p: 24px;
+    --scale-card-radius: 20px;
+    --scale-card-gap: 20px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --scale-sidebar-w: 280px;
+    --scale-btn-height: 42px;
+    --scale-btn-px: 16px;
+    --scale-btn-font: 14px;
+    --scale-btn-radius: 12px;
+    --scale-card-p: 18px;
+    --scale-card-radius: 16px;
+    --scale-card-gap: 16px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --scale-sidebar-w: 240px;
+    --scale-btn-height: 36px;
+    --scale-btn-px: 12px;
+    --scale-btn-font: 12px;
+    --scale-btn-radius: 10px;
+    --scale-card-p: 12px;
+    --scale-card-radius: 12px;
+    --scale-card-gap: 12px;
+  }
+}
+
+/* Responsive Typography Sizing using min-max clamp and CSS scale properties */
+.clamp-h1 {
+  font-size: var(--scale-h1) !important;
+  line-height: 1.15 !important;
+}
+
+.clamp-h2 {
+  font-size: var(--scale-h2) !important;
+  line-height: 1.2 !important;
+}
+
+.clamp-h3 {
+  font-size: var(--scale-h3) !important;
+  line-height: 1.25 !important;
+}
+
+.clamp-body {
+  font-size: var(--scale-body) !important;
+}
+
+.clamp-label {
+  font-size: var(--scale-small) !important;
+}
+
+/* Centralized Dynamic CSS Classes */
+.spacing-p-adaptive {
+  padding: var(--scale-spacing-p) !important;
+}
+
+.spacing-gap-adaptive {
+  gap: var(--scale-spacing-gap) !important;
+}
+
+.card-adaptive {
+  padding: var(--scale-card-p) !important;
+  border-radius: var(--scale-card-radius) !important;
+  gap: var(--scale-card-gap) !important;
+}
+
+.btn-primary-adaptive {
+  height: var(--scale-btn-height) !important;
+  padding-left: var(--scale-btn-px) !important;
+  padding-right: var(--scale-btn-px) !important;
+  font-size: var(--scale-btn-font) !important;
+  border-radius: var(--scale-btn-radius) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.sidebar-adaptive {
+  width: var(--scale-sidebar-w) !important;
+}
+
+.modal-adaptive {
+  max-width: var(--scale-modal-max-w) !important;
+  padding: var(--scale-modal-p) !important;
+}
+
+.input-adaptive {
+  height: var(--scale-input-h) !important;
+  font-size: var(--scale-input-font) !important;
+}
+
+.table-text-adaptive {
+  font-size: var(--scale-table-font) !important;
+}
+
+.nav-height-adaptive {
+  height: var(--scale-nav-h) !important;
+}
+
+/* Globally Adaptive Container Rules */
+.page-container {
+  width: 100%;
+  max-width: 1920px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(0.75rem, 2vw, 2rem);
+  padding-right: clamp(0.75rem, 2vw, 2rem);
+}
+
+/* Responsive Flex Box Patterns */
+.flex-adaptive {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 1024px) {
+  .flex-adaptive {
+    flex-direction: row;
+  }
+}
+
+/* Responsive Grid Patterns (Robust Auto Fitting) */
+.adaptive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1rem, 1.5vw, 1.5rem);
+}
+
+/* Sidebar Drawer Slide Animation */
+.sidebar-drawer {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 50;
+  width: 280px;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-drawer.open {
+  transform: translateX(0);
+}
+
+/* Adaptive Page Width and Center Scroll on Document Reader */
+.reader-canvas {
+  width: 100%;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: clamp(1rem, 4vw, 3rem);
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  transition: padding 0.3s ease;
+}
+
+.dark .reader-canvas {
+  background-color: #15181e;
+}
+
+/* Horizontal Scroll Toolbar for Editor on Mobile screens */
+.editor-horizontal-toolbar {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap;
+}
+
+.editor-horizontal-toolbar::-webkit-scrollbar {
+  height: 4px;
+}
+
+.editor-horizontal-toolbar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 2px;
+}
+
+/* Centralized Table Responsive View wrappers */
+.adaptive-table-container {
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+  display: block;
+}
+
+/* Bottom Sheet Sheet controls for Mobiles */
+.mobile-bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: white;
+  border-top-left-radius: 1.5rem;
+  border-top-right-radius: 1.5rem;
+  z-index: 50;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -10px 15px -3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.dark .mobile-bottom-sheet {
+  background-color: #15181e;
+}
+
+.mobile-bottom-sheet.open {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   📱 MOBILE & SMALL DEVICE SYSTEM WIDE RESPONSIVE STYLING
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  /* Slightly more compact layout wrapper for small laptops & tablets */
+  .max-w-7xl {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Scale default Tailwind font-sizes down slightly for general compactness */
+  h1, .text-4xl, .text-3xl {
+    font-size: clamp(1.4rem, 4vw, 1.85rem) !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  h2, .text-2xl {
+    font-size: clamp(1.2rem, 3.5vw, 1.45rem) !important;
+    line-height: 1.25 !important;
+  }
+
+  h3, .text-xl {
+    font-size: clamp(1.05rem, 3vw, 1.2rem) !important;
+  }
+
+  .text-lg {
+    font-size: 0.95rem !important;
+  }
+
+  /* Body text typography scale adjustment */
+  p, .text-base {
+    font-size: 0.85rem !important;
+    line-height: 1.5 !important;
+  }
+
+  .text-sm {
+    font-size: 0.8rem !important;
+  }
+
+  .text-xs {
+    font-size: 0.72rem !important;
+  }
+
+  /* Compact button styling override */
+  button, a {
+    font-size: 0.75rem !important;
+  }
+
+  /* Tighten paddings so components don't waste screen estate */
+  .p-8, .p-10, .p-12, .p-14, .p-16 {
+    padding: 1rem !important;
+  }
+  
+  .px-8, .px-10, .px-14, .px-16 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  .py-8, .py-10, .py-12, .py-14, .py-16 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .p-6 {
+    padding: 0.85rem !important;
+  }
+
+  .px-6 {
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+  }
+
+  .py-6 {
+    padding-top: 0.85rem !important;
+    padding-bottom: 0.85rem !important;
+  }
+
+  /* Prevent text wrapping layouts on active lists and flex panels */
+  .flex-col-mobile {
+    flex-direction: column !important;
+  }
+
+  /* Gap reduction */
+  .gap-6, .gap-8, .gap-10, .gap-12 {
+    gap: 0.75rem !important;
+  }
+
+  /* Rounded corners reduction on mobile */
+  .rounded-3xl, .rounded-\[32px\] {
+    border-radius: 1.25rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra support for tiny viewports (320px - 480px) */
+  h1, .text-4xl, .text-3xl {
+    font-size: 1.25rem !important;
+  }
+
+  h2, .text-2xl {
+    font-size: 1.15rem !important;
+  }
+
+  p, .text-base, .text-sm {
+    font-size: 0.78rem !important;
+  }
+
+  .text-xs {
+    font-size: 0.68rem !important;
+  }
+
+  /* Extra margin/padding reductions */
+  .p-4, .p-5 {
+    padding: 0.65rem !important;
+  }
+
+  .px-4, .px-5 {
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
+  .gap-4, .gap-5 {
+    gap: 0.5rem !important;
+  }
+
+  /* Navigation tweaks */
+  .tracking-widest {
+    tracking: normal !important;
+  }
+
+  /* Forms & Inputs sizes */
+  input, textarea, select {
+    font-size: 0.8rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+}
+
+/* ==========================================================================
+   🎮 EXACT TARGETED SELECTOR RULES FOR HIGHEST FIDELITY RESPONSIVENESS
+   ========================================================================== */
+
+/* Adaptive view container height */
+.adaptive-view-height {
+  height: calc(100vh - 56px) !important;
+}
+@media (min-width: 640px) {
+  .adaptive-view-height {
+    height: calc(100vh - 64px) !important;
+  }
+}
+
+/* CSS selector 1: Controls container inside the comfort settings toolbar */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: clamp(0.2rem, 1vw, 0.35rem) !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  font-size: clamp(0.65rem, 1.8vw, 0.75rem) !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) button,
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) select {
+  font-size: clamp(0.6rem, 1.6vw, 0.7rem) !important;
+  padding: clamp(0.2rem, 1vw, 0.3rem) clamp(0.35rem, 1.5vw, 0.5rem) !important;
+  border-radius: clamp(0.25rem, 1vw, 0.5rem) !important;
+}
+
+@media (min-width: 1200px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) {
+    width: auto !important;
+    justify-content: center !important;
+    gap: 0.625rem !important;
+  }
+}
+
+/* CSS selector 2: Brand/title description header inside comfort toolbar */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) {
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(0.25rem, 1.2vw, 0.4rem) !important;
+  width: 100% !important;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.4) !important;
+  padding-bottom: clamp(0.25rem, 1.2vw, 0.5rem) !important;
+}
+
+/* Hide unified writing playground helper on smaller screens slightly to save area catalog */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) p {
+  font-size: clamp(0.55rem, 1.5vw, 0.625rem) !important;
+  display: none !important;
+}
+@media (min-width: 480px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) p {
+    display: block !important;
+  }
+}
+
+.dark div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) {
+  border-bottom-color: rgba(63, 63, 70, 0.4) !important;
+}
+
+@media (min-width: 1200px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) {
+    width: auto !important;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
+}
+
+/* CSS selector 3: Settings Toolbar container (#comfort-workspace-settings-toolbar) */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) {
+  padding: clamp(0.35rem, 1.5vw, 0.65rem) !important;
+  gap: clamp(0.3rem, 1.2vw, 0.5rem) !important;
+  border-radius: clamp(0.4rem, 1.5vw, 0.75rem) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+
+@media (min-width: 1200px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div#comfort-workspace-settings-toolbar:nth-of-type(1) {
+    flex-direction: row !important;
+    padding: 1.25rem !important;
+    gap: 1rem !important;
+    border-radius: 1rem !important;
+  }
+}
+
+/* CSS selector 4: Main layout right-aligned button/search group inside top navigation */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) > div:nth-of-type(2) {
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(0.2rem, 1vw, 0.35rem) !important;
+  flex-wrap: wrap !important;
+}
+
+/* CSS selector 5: Main layout top header wrapper elements */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) {
+  min-height: auto !important;
+  height: auto !important;
+  padding: 0px !important;
+  margin: 0px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: clamp(0.15rem, 0.6vw, 0.3rem) !important;
+  flex-wrap: wrap !important;
+  background-color: transparent !important;
+}
+
+/* Outer component layout container adjustment - remove extra margins and maximize available space with generous responsive padding */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) {
+  margin: 0px !important;
+  padding: clamp(12px, 2vw, 24px) clamp(1rem, 3.5vw, 3rem) !important;
+  gap: clamp(12px, 2.2vw, 24px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Explicit layout container for the Workspace Hub dashboard with sticky sidebar to remove any outer margin/padding separations */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div.workspace-hub-main-wrapper {
+  margin: 0px !important;
+  padding: 0px !important;
+  gap: 0px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* User styling request for the comfort workspace settings toolbar & exact nested items */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) {
+  padding: clamp(4px, 1.2vw, 8px) clamp(6px, 1.5vw, 10px) !important;
+  gap: clamp(6px, 1.5vw, 10px) !important;
+  border-radius: clamp(8px, 1.5vw, 12px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
+  border-width: 1px !important;
+  width: 100% !important;
+}
+
+@media (min-width: 1200px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) {
+    flex-direction: row !important;
+    padding: 6px 12px !important;
+    gap: 10px !important;
+    border-radius: 12px !important;
+    width: auto !important;
+  }
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) {
+  display: flex !important;
+  align-items: center !important;
+  gap: clamp(4px, 1.1vw, 8px) !important;
+  width: 100% !important;
+}
+
+@media (min-width: 1200px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) {
+    width: auto !important;
+  }
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: clamp(3px, 1vw, 6px) !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+}
+
+@media (min-width: 1024px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) {
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    width: auto !important;
+  }
+}
+
+/* Selector 3: Adjust settings element blocks to scale and compress perfectly */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: clamp(8px, 1.5vw, 16px) !important;
+  padding: clamp(6px, 1.2vw, 12px) !important;
+  width: 100% !important;
+  font-size: clamp(0.75rem, 1.8vw, 0.9rem) !important;
+}
+
+/* Theme selections pill controller setup */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+  padding: 3px !important;
+  border-radius: 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1) > span:nth-of-type(1),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2) > span:nth-of-type(1),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3) > span:nth-of-type(1) {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.03em !important;
+}
+
+@media (max-width: 480px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1) > span:nth-of-type(1),
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2) > span:nth-of-type(1),
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3) > span:nth-of-type(1) {
+    font-size: 10px !important;
+  }
+}
+
+/* Metadata text values */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1) {
+  font-size: 10px !important;
+  letter-spacing: 0.01em !important;
+  font-style: italic !important;
+  font-weight: 500 !important;
+}
+
+@media (max-width: 480px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1) {
+    display: none !important;
+  }
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > span:nth-of-type(1) {
+  font-size: 13px !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Annotator highlighter selection classes */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1) {
+  padding: 3px 6px !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > button:nth-of-type(1) > span:nth-of-type(1) {
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* Functional state toggles */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1) {
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1) > span:nth-of-type(1) {
+  font-size: 11px !important;
+  letter-spacing: 0.03em !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#comfort-workspace-settings-toolbar:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2) {
+  padding: 6px 10px !important;
+  border-radius: 8px !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2) > span:nth-of-type(1) {
+  font-size: 11px !important;
+  letter-spacing: 0.03em !important;
+}
+
+
+/* Focused theme selection buttons scaling system - make them ultra small and fit perfectly */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: clamp(2px, 0.6vw, 4px) !important;
+  padding: 2px !important;
+  border-radius: 8px !important;
+  flex-wrap: nowrap !important;
+  max-width: 100% !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3) {
+  padding: clamp(2px, 0.5vw, 4px) clamp(4px, 1vw, 8px) !important;
+  height: clamp(22px, 2.5vw, 28px) !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1) > span:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1) > span:nth-of-type(1),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2) > span:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2) > span:nth-of-type(1),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3) > span:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3) > span:nth-of-type(1) {
+  font-size: clamp(8px, 0.9vw, 10px) !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(1) > svg,
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(2) > svg,
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > button:nth-of-type(3) > svg {
+  width: clamp(8px, 1.1vw, 12px) !important;
+  height: clamp(8px, 1.1vw, 12px) !important;
+}
+
+/* ==============================================
+   DOCUMENT CANVAS TOOLBAR RESPONSIVE CONTAINER & ITEMS
+   ============================================== */
+
+/* Selector 16: Document Canvas Toolbar container */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) {
+  padding: clamp(6px, 1.2vw, 10px) clamp(8px, 1.5vw, 12px) !important;
+  border-radius: clamp(10px, 1.8vw, 16px) !important;
+  gap: clamp(8px, 1.5vw, 12px) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+  margin-bottom: 4px !important;
+}
+
+/* Selector 15: Logo/icon box container inside canvas toolbar */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  padding: clamp(4px, 1vw, 8px) !important;
+  border-radius: clamp(8px, 1.2vw, 12px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > svg {
+  width: clamp(12px, 1.5vw, 16px) !important;
+  height: clamp(12px, 1.5vw, 16px) !important;
+}
+
+/* Selector 13: Sub-meta/description copy text inside canvas toolbar */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(1) {
+  font-size: clamp(8px, 1vw, 10px) !important;
+  margin-top: 1px !important;
+  opacity: 0.8 !important;
+}
+
+/* Selector 1: Theme & Controls container parent */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: clamp(4px, 1vw, 8px) !important;
+  justify-content: flex-start !important;
+}
+
+/* Selector 14: Settings toolbar theme controller selection spacing override */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  gap: 3px !important;
+  padding: 1px !important;
+}
+
+/* Selector 10, 11, 12: Individual Theme Switcher Pill Buttons (Slate, Vanilla, Midnight) */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3) {
+  padding: clamp(2px, 0.6vw, 4px) clamp(5px, 1.1vw, 8px) !important;
+  font-size: clamp(8px, 0.9vw, 10px) !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(1) svg,
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(2) svg,
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > button:nth-of-type(3) svg {
+  width: clamp(8px, 1vw, 11px) !important;
+  height: clamp(8px, 1vw, 11px) !important;
+}
+
+/* Selector 8 & 9: Tabs buttons inside mid container (Pages Division, Index Based) */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1) {
+  padding: clamp(2px, 0.6vw, 4px) clamp(5px, 1.1vw, 8px) !important;
+  font-size: clamp(8px, 1vw, 10px) !important;
+  border-radius: 6px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(1) > span:nth-of-type(1) {
+  font-size: clamp(8px, 0.9vw, 10px) !important;
+}
+
+/* Selector 5: Highlight preset block */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: clamp(3px, 0.8vw, 6px) !important;
+  padding: 1px 3px !important;
+  border-radius: 8px !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Selector 4: Highlighter Action Button inside highlight selector */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > button:nth-of-type(1) {
+  padding: clamp(2px, 0.5vw, 4px) clamp(5px, 1vw, 8px) !important;
+  border-radius: 6px !important;
+  font-size: clamp(8px, 0.9vw, 10px) !important;
+  gap: 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Selector 3: Highlight Action Inner Text/Label */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > button:nth-of-type(1) > span:nth-of-type(1) {
+  font-size: clamp(8px, 0.9vw, 9.5px) !important;
+}
+
+/* Selector 2: Erase Highlight Action label copy */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > button:nth-of-type(2) > span:nth-of-type(1) {
+  font-size: clamp(8px, 0.9vw, 9.5px) !important;
+}
+
+/* Selector 7: Right Block control button (Index dialog trigger) */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1) {
+  padding: clamp(3px, 0.8vw, 6px) clamp(6px, 1.2vw, 10px) !important;
+  font-size: clamp(8px, 1vw, 10.5px) !important;
+  border-radius: 8px !important;
+  gap: 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Selector 6: Index button span label copy text */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#document-canvas-toolbar:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1) > span:nth-of-type(1) {
+  font-size: clamp(8px, 1vw, 10.5px) !important;
+}
+
+/* ==========================================================
+   🔧 SYSTEM-WIDE SPECIFIC SHRUNK SCALING SYSTEM & SPACING COMPACTNESS
+   ========================================================== */
+
+/* Selector 4.1: Dashboard first component (Hero Banner / Section) */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) {
+  margin-top: 0 !important;
+  margin-bottom: clamp(10px, 2vw, 20px) !important;
+  padding: clamp(12px, 2.5vw, 24px) clamp(14px, 3vw, 32px) !important;
+}
+
+/* Selector 4.2: Dashboard core root wrap component */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) {
+  padding: clamp(12px, 2vw, 24px) clamp(1rem, 3.5vw, 3rem) !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  gap: clamp(12px, 2.2vw, 24px) !important;
+}
+
+/* Selector 2, 3, 4, 5: Dynamic dashboard and listing overview stat card metrics numeric values scaling */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > p:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > p:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(2) > p:nth-of-type(2) {
+  font-size: clamp(14px, 2.2vw, 24px) !important;
+  font-weight: 900 !important;
+  line-height: 1.15 !important;
+}
+
+/* Selector 8: Workspace Dashboard search input field adaptive height and font-size */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > input:nth-of-type(1) {
+  height: clamp(36px, 3.8vw, 48px) !important;
+  font-size: clamp(11.5px, 1.25vw, 14.5px) !important;
+  padding-left: clamp(36px, 3.8vw, 48px) !important;
+  padding-right: clamp(12px, 1.5vw, 20px) !important;
+}
+
+/* Selector 9: Workspace Dashboard search input icon adaptive sizes and placement */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1):not(.workspace-hub-main-wrapper) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > svg:nth-of-type(1) {
+  width: clamp(15px, 1.7vw, 20px) !important;
+  height: clamp(15px, 1.7vw, 20px) !important;
+  left: clamp(10px, 1.2vw, 15px) !important;
+}
+
+/* ==========================================================
+   🏆 WORKSPACE SECTION CUSTOM HIGHLIGHTED DESIGN STYLES (SELECTORS 1-5)
+   ========================================================== */
+
+/* CSS selector 1 & Table Header 1 styling */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#workspace-listing:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > table:nth-of-type(1) > thead:nth-of-type(1) > tr:nth-of-type(1) > th:nth-of-type(1) {
+  letter-spacing: 0.15em !important;
+  color: #6366f1 !important; /* Custom Indigo highlight */
+  font-weight: 900 !important;
+}
+
+/* CSS selector 2 & Table Header 2 styling */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#workspace-listing:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > table:nth-of-type(1) > thead:nth-of-type(1) > tr:nth-of-type(1) > th:nth-of-type(2) {
+  letter-spacing: 0.15em !important;
+  color: #64748b !important;
+  font-weight: 900 !important;
+}
+
+/* CSS selector 3 & Table Header 3 styling */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#workspace-listing:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > table:nth-of-type(1) > thead:nth-of-type(1) > tr:nth-of-type(1) > th:nth-of-type(3) {
+  letter-spacing: 0.15em !important;
+  color: #0ea5e9 !important; /* Custom Sky highlight */
+  font-weight: 900 !important;
+}
+
+/* CSS selector 4 & Table Header 4 styling */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#workspace-listing:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > table:nth-of-type(1) > thead:nth-of-type(1) > tr:nth-of-type(1) > th:nth-of-type(4) {
+  letter-spacing: 0.15em !important;
+  color: #64748b !important;
+  font-weight: 950 !important;
+}
+
+/* CSS selector 5: Controls & View Toggles Row Custom Outer Accent */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#workspace-listing:nth-of-type(2) > div:nth-of-type(1) {
+  box-shadow: var(--shadow-md), 0 0 0 2px rgba(99, 102, 241, 0.04) !important;
+  border-color: rgba(99, 102, 241, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.dark div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#workspace-listing:nth-of-type(2) > div:nth-of-type(1) {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(238, 225, 186, 0.05) !important;
+  border-color: rgba(238, 225, 186, 0.1) !important;
+}
+
+/* ==========================================================
+   🎯 USER FOCUSED HIDE OVERRIDES (SELECTORS 1-3)
+   ========================================================== */
+
+/* CSS selector 1 targeting timeline items container */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
+  display: none !important;
+}
+
+/* CSS selector 2 targeting additional nested timeline child */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(5) {
+  display: none !important;
+}
+
+/* CSS selector 3 targeting parent Live Activity Timeline layout container block */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) {
+  display: none !important;
+}
+
+/* Public Content KPI Label size reduction and device-responsive fitting overrides */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div#public-content-container:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > p:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div#public-content-container:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > p:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div#public-content-container:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > p:nth-of-type(2),
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div#public-content-container:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(2) > p:nth-of-type(2) {
+  font-size: clamp(6px, 1.1vw, 9px) !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  margin-top: clamp(2px, 0.4vw, 4px) !important;
+}
+
+
+/* ==========================================================
+   🚀 UNIVERSAL RESPONSIVE STYLING SYSTEM FOR THE DOCUMENT NEXUS
+   ========================================================== */
+
+/* 1. Global Wrapper Layout */
+#nexus-reader-layout-split,
+#nexus-bookmark-reader-layout-split,
+.document-nexus-workspace-split {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* 2. Unified Responsive Sidebar Configuration */
+.nexus-responsive-aside {
+  width: var(--scale-sidebar-w) !important;
+  height: 100% !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative !important;
+  z-index: 25 !important;
+}
+
+/* 3. True Full Collapse State for Sidebar (0 Width) */
+.nexus-responsive-aside.collapsed-aside {
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  border-right-width: 0px !important;
+}
+
+/* 4. Reading and Writing Mode Responsive Adjustments across specific device viewports */
+@media (max-width: 1023px) {
+  /* On tablets and smaller screens, the sidebar transitions seamlessly into an accessible floating drawer/sliding-panel overlay! */
+  .nexus-responsive-aside {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    background-color: var(--aside-bg, #ffffff) !important;
+    box-shadow: 10px 0 30px -5px rgba(0, 0, 0, 0.12) !important;
+  }
+  
+  .dark .nexus-responsive-aside {
+    background-color: var(--aside-bg, #0f1116) !important;
+    box-shadow: 10px 0 30px -5px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  /* When collapsed on mobile/tablet, translate totally out of the screen */
+  .nexus-responsive-aside.collapsed-aside {
+    transform: translateX(-100%) !important;
+    width: 0 !important;
+  }
+  
+  /* Ensure the sidebar matches the tablet structure size bounds */
+  .nexus-responsive-aside:not(.collapsed-aside) {
+    width: var(--scale-sidebar-w) !important;
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* 5. Document Top & Canvas Toolbar Sizing Adjustments */
+#document-canvas-toolbar,
+.document-nexus-top-toolbar {
+  padding: clamp(10px, 1.5vw, 18px) !important;
+  border-radius: clamp(12px, 1.5vw, 24px) !important;
+  flex-wrap: wrap !important;
+  gap: clamp(8px, 1.2vw, 16px) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 6. Button and Icon Sizes Adaptation */
+#document-canvas-toolbar button,
+.document-nexus-top-toolbar button {
+  padding-top: clamp(6px, 1vw, 10px) !important;
+  padding-bottom: clamp(6px, 1vw, 10px) !important;
+  padding-left: clamp(10px, 1.2vw, 16px) !important;
+  padding-right: clamp(10px, 1.2vw, 16px) !important;
+  font-size: clamp(10px, 1.1vw, 13px) !important;
+  border-radius: clamp(8px, 1vw, 12px) !important;
+  line-height: 1.2 !important;
+}
+
+/* Ensure icons inside toolbars stay perfectly bound-friendly */
+#document-canvas-toolbar svg,
+.document-nexus-top-toolbar svg {
+  width: clamp(11px, 1.2vw, 14px) !important;
+  height: clamp(11px, 1.2vw, 14px) !important;
+}
+
+/* 7. Document Reader sequential sheet canvas limits */
+.document-nexus-reader-canvas,
+.document-nexus-sequential-block {
+  padding: clamp(12px, 2vw, 32px) !important;
+  border-radius: clamp(12px, 2vw, 24px) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* 8. Card, Index, Annotation, Bookmark, Highlight Panels Responsive Layouts */
+.nexus-index-panel,
+.nexus-annotation-panel,
+.nexus-bookmark-panel,
+.nexus-highlight-panel {
+  padding: clamp(10px, 1.5vw, 20px) !important;
+  border-radius: clamp(10px, 1.5vw, 16px) !important;
+  gap: clamp(8px, 1.2vw, 16px) !important;
+  font-size: clamp(12px, 1.3vw, 15px) !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Image and table responsiveness inside reader & editor sheets */
+.document-nexus-reader-canvas img,
+.document-nexus-reader-canvas table,
+.nexus-index-panel table,
+.nexus-index-panel img {
+  max-width: 100% !important;
+  height: auto !important;
+  display: block !important;
+}
+
+.document-nexus-reader-canvas table,
+.nexus-index-panel table {
+  width: 100% !important;
+  overflow-x: auto !important;
+  display: block !important;
+  border-collapse: collapse !important;
+}
+
+/* 9. Typography Adaptive Overrides inside the Editor & Sequential reading frames */
+.document-nexus-reader-canvas h1,
+.document-nexus-reader-canvas .editor h1 {
+  font-size: var(--scale-h1) !important;
+  margin-bottom: 0.5em !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+}
+
+.document-nexus-reader-canvas h2,
+.document-nexus-reader-canvas .editor h2 {
+  font-size: var(--scale-h2) !important;
+  margin-bottom: 0.4em !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.document-nexus-reader-canvas h3,
+.document-nexus-reader-canvas .editor h3 {
+  font-size: var(--scale-h3) !important;
+  margin-bottom: 0.4em !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+.document-nexus-reader-canvas p,
+.document-nexus-reader-canvas .editor p {
+  font-size: var(--scale-body) !important;
+  line-height: 1.625 !important;
+  margin-bottom: 1em !important;
+}
+
+/* Shrink headers/spacing slightly on compact devices for elegant typography density rhythm */
+@media (max-width: 767px) {
+  .document-nexus-reader-canvas p,
+  .document-nexus-reader-canvas .editor p {
+    line-height: 1.5 !important;
+  }
+}
+
+/* ==========================================================
+   🎯 SPECIFIC STYLES TO RESOLVE COMPACT DEVICE OVERLAPPING & OVERFLOWS
+   ========================================================== */
+
+/* Target CSS selector 1: The pages/indices sequential lists container in the Document Sidebar content view */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > aside:nth-of-type(1) > div#document-sidebar-content-view:nth-of-type(3) > div#sidebar-pages-list:nth-of-type(1) > div:nth-of-type(2) {
+  flex-grow: 1 !important;
+  flex-shrink: 1 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  padding: clamp(8px, 1.5vw, 16px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: clamp(6px, 1vw, 12px) !important;
+  scroll-behavior: smooth !important;
+}
+
+/* Ensure no element inside the sidebar list rows overlaps, and has clean spacing & padding in compact reading and writing screens */
+#sidebar-pages-list div.group,
+#document-sidebar-content-view .group {
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
+  min-height: clamp(32px, 4vw, 44px) !important;
+  padding: clamp(6px, 1vw, 12px) !important;
+  border-radius: clamp(8px, 1vw, 12px) !important;
+  gap: clamp(4px, 0.8vw, 10px) !important;
+  margin-bottom: 2px !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+/* Ensure text inside list nodes scale down dynamically to completely prevent horizontal and content overlaps */
+#sidebar-pages-list div.group span,
+#document-sidebar-content-view .group span {
+  font-size: clamp(10.5px, 1.15vw, 13px) !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+/* Align and adapt badged numbers to not wrap separately */
+#sidebar-pages-list div.group span:first-child,
+#document-sidebar-content-view .group span:first-child {
+  flex-shrink: 0 !important;
+}
+
+/* Target CSS selector 2: Global design outer document workspace container */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) {
+  width: 100% !important;
+  max-width: 1920px !important;
+  margin: 0 auto !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-x: hidden !important;
+  position: relative !important;
+}
+
+/* Prevent any possible content overlap in sidebar filter inputs or navigation tab headers on small screens */
+@media (max-width: 639px) {
+  #sidebar-pages-list div:nth-of-type(1) {
+    padding: 6px !important;
+    gap: 4px !important;
+  }
+  
+  #document-sidebar-content-view {
+    min-height: 0 !important;
+    flex-grow: 1 !important;
+  }
+}
+
+/* Make selected workspace header / toolbar div sticky / fixed at the top with other elements rolling under it */
+div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+.dark div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4) !important;
+}
+
+@media (max-width: 1023px) {
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > aside:nth-of-type(1) > div:nth-of-type(1) {
+    margin-top: 120px !important;
+  }
+}
+
+/* WORKSPACE HUB HEADER MOBILE OPTIMIZATIONS (CSS SELECTORS FROM FOCUS-MODE) */
+@media (max-width: 767px) {
+  /* Selector 1: Page Header Container */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > header:nth-of-type(1) {
+    padding: 8px 12px !important;
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+    height: auto !important;
+  }
+
+  /* Selector 4: Workspace Title H2 */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > h2:nth-of-type(1) {
+    font-size: 13px !important;
+    max-width: 130px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+  }
+
+  /* Selector 5: Current View Sub-text breadcrumb */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(2) {
+    font-size: 8px !important;
+    max-width: 60px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: inline-block !important;
+  }
+
+  /* Selector 2: Download Workspace Hub Button */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > button#download-workspace-hub-btn:nth-of-type(1) {
+    padding: 6px 10px !important;
+    font-size: 10px !important;
+    height: 32px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Selector 3: Plus Create Button */
+  div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > button:nth-of-type(2) {
+    padding: 6px !important;
+    border-radius: 8px !important;
+    height: 32px !important;
+    width: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+

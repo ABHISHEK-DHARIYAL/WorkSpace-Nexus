@@ -1,10 +1,10 @@
 {
-  "projectId": "eng-upgrade-78gvj",
-  "appId": "1:1065910770330:web:e173e02748ef8f6a1f1d23",
-  "apiKey": "AIzaSyCwk7QmcZjz5bIM92ewtFLOIxWnWAsAQHM",
-  "authDomain": "eng-upgrade-78gvj.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-c27f2bfd-e35e-44ad-97af-dcf29cce3ad5",
-  "storageBucket": "eng-upgrade-78gvj.firebasestorage.app",
-  "messagingSenderId": "1065910770330",
+  "projectId": "gen-lang-client-0023312422",
+  "appId": "1:884720855276:web:9ea520e24c4b10e025ddc9",
+  "apiKey": "AIzaSyCl6QsJIUqOWUPSZ6W7pCOCgy9kVOF9MSk",
+  "authDomain": "gen-lang-client-0023312422.firebaseapp.com",
+  "firestoreDatabaseId": "ai-studio-9604110d-8f79-4373-ac4e-4e31d123047c",
+  "storageBucket": "gen-lang-client-0023312422.firebasestorage.app",
+  "messagingSenderId": "884720855276",
   "measurementId": ""
 }

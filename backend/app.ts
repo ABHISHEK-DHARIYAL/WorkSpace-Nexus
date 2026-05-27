@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import cors from "cors";
 import morgan from "morgan";
+import { createServer as createViteServer } from "vite";
 import routes from "./routes";
 import { ENV } from "./config/env";
 import { testFirestoreConnection } from "./config/firebase";
@@ -21,17 +22,9 @@ export async function createApp() {
   // API Routes
   app.use("/api", routes);
 
-  // Catch-all for API routes before static serving to prevent API route requests from falling through to client index.html serving
-  app.use("/api/*", (req, res) => {
-    res.status(404).json({
-      message: `API route not found: ${req.method} ${req.baseUrl || req.url}`
-    });
-  });
-
   // Vite / Static Serving
-  if (ENV.NODE_ENV !== "production" && !process.env.VERCEL && !process.env.NOW_BUILDER) {
+  if (ENV.NODE_ENV !== "production") {
     console.log("Setting up Vite middleware...");
-    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

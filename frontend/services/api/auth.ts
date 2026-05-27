@@ -13,7 +13,6 @@ import {
   doc 
 } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
-import api from './client';
 
 export const mapAuthError = (err: any): string => {
   const code = err?.code || '';
@@ -238,15 +237,6 @@ export const authService = {
         }
       }
     }
-    
-    // 3. Make sure we delete from Express backend JSON database files as well
-    try {
-      await api.delete('/auth/delete-account');
-      console.log("[Auth Service] Backend cascade deletion completed successfully.");
-    } catch (apiErr) {
-      console.warn("[Auth Service] Backend delete account api failed (ignorable in client-only modes):", apiErr);
-    }
-
     // Sandbox / Mock session mode: succeed gracefully
     console.log("Mock deleteAccount resolved successfully.");
     return true;

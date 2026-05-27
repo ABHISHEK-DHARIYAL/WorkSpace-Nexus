@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import cors from "cors";
 import morgan from "morgan";
-import { createServer as createViteServer } from "vite";
 import routes from "./routes";
 import { ENV } from "./config/env";
 import { testFirestoreConnection } from "./config/firebase";
@@ -23,8 +22,9 @@ export async function createApp() {
   app.use("/api", routes);
 
   // Vite / Static Serving
-  if (ENV.NODE_ENV !== "production") {
+  if (ENV.NODE_ENV !== "production" && !process.env.VERCEL && !process.env.NOW_BUILDER) {
     console.log("Setting up Vite middleware...");
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

@@ -20,6 +20,9 @@ export const mapAuthError = (err: any): string => {
   const msg = err?.message || '';
   
   switch (code) {
+    case 'auth/api-key-not-valid':
+    case 'auth/invalid-api-key':
+      return 'Firebase authentication is unavailable because the configured API key is invalid.';
     case 'auth/email-already-in-use':
       return 'This email address is already registered in Workspace Nexus.';
     case 'auth/invalid-email':
@@ -51,7 +54,13 @@ export const authService = {
     try {
       return await signInWithEmailAndPassword(auth, data.email, data.password);
     } catch (err: any) {
-      throw new Error(mapAuthError(err));
+      const normalizedError = new Error(mapAuthError(err)) as Error & {
+        code?: string;
+        cause?: unknown;
+      };
+      normalizedError.code = err?.code;
+      normalizedError.cause = err;
+      throw normalizedError;
     }
   },
 
@@ -62,7 +71,13 @@ export const authService = {
     try {
       return await createUserWithEmailAndPassword(auth, data.email, data.password);
     } catch (err: any) {
-      throw new Error(mapAuthError(err));
+      const normalizedError = new Error(mapAuthError(err)) as Error & {
+        code?: string;
+        cause?: unknown;
+      };
+      normalizedError.code = err?.code;
+      normalizedError.cause = err;
+      throw normalizedError;
     }
   },
 

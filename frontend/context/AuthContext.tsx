@@ -49,6 +49,20 @@ const getAuthErrorMessage = (
   return normalizedMessage || fallbackMessage;
 };
 
+const isFirebaseApiKeyFailure = (err: any): boolean => {
+  const message = String(err?.message || '').toLowerCase();
+  const code = String(err?.code || '').toLowerCase();
+  const causeMessage = String(err?.cause?.message || '').toLowerCase();
+  const causeCode = String(err?.cause?.code || '').toLowerCase();
+
+  return [message, code, causeMessage, causeCode].some((value) =>
+    value.includes('api-key-not-valid') ||
+    value.includes('invalid-api-key') ||
+    value.includes('api key not valid') ||
+    value.includes('please pass a valid api key')
+  );
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -326,6 +340,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await handleFirebaseUserAuthenticated(credential.user);
         return;
       } catch (err: any) {
+        if (isFirebaseApiKeyFailure(err)) {
+          console.warn('Firebase signup unavailable due to invalid API key. Falling back to backend auth.');
+        } else {
+          const normalizedMessage = getAuthErrorMessage(
+            err,
+            'We could not create your account right now. If you already registered, try logging in with the same email and password.',
+            'An account with this email already exists. Signing you in instead.'
+          );
+
+          const lowerMessage = normalizedMessage.toLowerCase();
+          const isExistingAccount =
+            err?.response?.status === 409 ||
+            lowerMessage.includes('already exists') ||
+            lowerMessage.includes('already registered') ||
+            lowerMessage.includes('already in use');
+
+          if (isExistingAccount) {
+            try {
+              await loginWithEmail(email, password);
+              return;
+            } catch {
+              throw new Error('This account already exists. Please log in with your existing password.');
+            }
+          }
+
+          throw new Error(normalizedMessage);
+        }
+      }
+    }
+
+    try {
+      const response = await api.post('/auth/signup', { email, password });
+      if (response.data && response.data.token) {
+        const { token, user: userData } = response.data;
+        login(token, userData);
+      } else {
+        throw new Error(response.data?.message || 'Signup failed.');
+      }
+    } catch (err: any) {
         const normalizedMessage = getAuthErrorMessage(
           err,
           'We could not create your account right now. If you already registered, try logging in with the same email and password.',
@@ -348,40 +401,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        throw new Error(normalizedMessage);
-      }
-    }
-
-    try {
-      const response = await api.post('/auth/signup', { email, password });
-      if (response.data && response.data.token) {
-        const { token, user: userData } = response.data;
-        login(token, userData);
-      } else {
-        throw new Error(response.data?.message || 'Signup failed.');
-      }
-    } catch (err: any) {
-      const normalizedMessage = getAuthErrorMessage(
-        err,
-        'We could not create your account right now. If you already registered, try logging in with the same email and password.',
-        'An account with this email already exists. Signing you in instead.'
-      );
-
-      const lowerMessage = normalizedMessage.toLowerCase();
-      const isExistingAccount =
-        err?.response?.status === 409 ||
-        lowerMessage.includes('already exists') ||
-        lowerMessage.includes('already registered');
-
-      if (isExistingAccount) {
-        try {
-          await loginWithEmail(email, password);
-          return;
-        } catch {
-          throw new Error('This account already exists. Please log in with your existing password.');
-        }
-      }
-
       throw new Error(normalizedMessage);
     }
   };
@@ -393,11 +412,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await handleFirebaseUserAuthenticated(credential.user);
         return;
       } catch (err: any) {
-        const errorMsg = getAuthErrorMessage(
-          err,
-          'We could not log you in right now. Please verify your credentials and try again.'
-        ) || 'Incorrect email address or password. Please try again.';
-        throw new Error(errorMsg);
+        if (isFirebaseApiKeyFailure(err)) {
+          console.warn('Firebase login unavailable due to invalid API key. Falling back to backend auth.');
+        } else {
+          const errorMsg = getAuthErrorMessage(
+            err,
+            'We could not log you in right now. Please verify your credentials and try again.'
+          ) || 'Incorrect email address or password. Please try again.';
+          throw new Error(errorMsg);
+        }
       }
     }
 

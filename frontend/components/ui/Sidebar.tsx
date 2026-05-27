@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
       setNewPassword('');
       setTimeout(() => setShowSecurityModal(false), 2000);
     } catch (err: any) {
-      setPasswordStatus({ type: 'error', msg: err?.response?.data?.message || 'Failed to update password' });
+      setPasswordStatus({ type: 'error', msg: err?.message || err?.response?.data?.message || 'Failed to update password' });
     } finally {
       setUpdatingPassword(false);
     }
@@ -79,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onOpenSettings }) => {
       logout();
       navigate('/login');
     } catch (err: any) {
-      setPasswordStatus({ type: 'error', msg: err?.response?.data?.message || 'Failed to delete account' });
+      setPasswordStatus({ type: 'error', msg: err?.message || err?.response?.data?.message || 'Failed to delete account' });
       setDeleteConfirm(false);
     } finally {
       setDeletingAccount(false);

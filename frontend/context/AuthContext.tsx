@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Save/update user profile in Firestore
       try {
-        const isSA = email.toLowerCase() === "heroofthevil311@gmail.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
+        const isSA = email.toLowerCase() === "admin@workspace.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
         const profileData: any = {
           uid: fbUser.uid,
           name: fbUser.displayName || email.split('@')[0],
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Call Direct login(token, userData) with Firebase ID Token instead of making backend /api/auth calls
     try {
       const token = await fbUser.getIdToken();
-      const isSA = email.toLowerCase() === "heroofthevil311@gmail.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
+      const isSA = email.toLowerCase() === "admin@workspace.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
       const finalUser = {
         uid: fbUser.uid,
         email: email,
@@ -163,6 +163,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } finally {
           setLoading(false);
         }
+      } else if (!fbUser) {
+        // If Firebase currentUser becomes null: auto logout to handle account deletions or manual token revocation
+        const token = localStorage.getItem('token');
+        if (token && !token.startsWith('mock_')) {
+          console.log("Firebase session invalidated. Triggering automatic logout cleanup.");
+          logout();
+        }
       }
     });
 
@@ -192,7 +199,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const handleMockAuthenticate = async (email: string, name: string) => {
     console.log("Proceeding with high-durability local sandbox session for:", email);
-    const isSA = email.toLowerCase() === "heroofthevil311@gmail.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
+    const isSA = email.toLowerCase() === "admin@workspace.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
     const mockUser = {
       email: email,
       uid: email,
@@ -213,7 +220,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async () => {
     // If we recognize Firebase is unconfigured or has credentials missing from environment settings, show the account selector list
-    const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
+    const isMockOrUnconfigured = !auth || !(auth as any).app?.options?.apiKey || (auth as any).app.options.apiKey === 'remixed-api-key';
     
     if (isMockOrUnconfigured) {
       console.log("Unconfigured Firebase Auth environment detected. Showing Google account selector list.");
@@ -276,7 +283,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signupWithEmail = async (email: string, password: string) => {
-    const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
+    const isMockOrUnconfigured = !auth || !(auth as any).app?.options?.apiKey || (auth as any).app.options.apiKey === 'remixed-api-key';
     if (isMockOrUnconfigured) {
       console.log("Mock/Unconfigured mode: signing up sandbox account");
       await handleMockAuthenticate(email, email.split('@')[0]);
@@ -299,7 +306,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithEmail = async (email: string, password: string) => {
-    const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
+    const isMockOrUnconfigured = !auth || !(auth as any).app?.options?.apiKey || (auth as any).app.options.apiKey === 'remixed-api-key';
     if (isMockOrUnconfigured) {
       console.log("Mock/Unconfigured mode: logging in sandbox account");
       await handleMockAuthenticate(email, email.split('@')[0]);
@@ -329,8 +336,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = async () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch (clearErr) {
+      console.warn("Storage clearing errored:", clearErr);
+    }
     delete api.defaults.headers.common['Authorization'];
     setUser(null);
     if (auth) {
@@ -439,19 +450,19 @@ const MockGoogleAuthModal: React.FC<MockGoogleAuthModalProps> = ({ isOpen, onClo
         {/* Account Selector List */}
         <div className="p-6 space-y-3">
           <button
-            onClick={() => handleSelectAccount('heroofthevil311@gmail.com', 'Hero Of The Vil')}
+            onClick={() => handleSelectAccount('admin@workspace.com', 'Admin')}
             disabled={isSubmitting}
             className="w-full flex items-center p-3 rounded-xl border border-slate-200 dark:border-indigo-800/80 hover:border-indigo-500 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/10 transition-all text-left bg-indigo-50/10 dark:bg-indigo-950/5 group cursor-pointer"
           >
             <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center text-sm mr-3">
-              HE
+              AD
             </div>
             <div className="flex-1">
               <span className="block font-bold text-sm text-slate-900 dark:text-white group-hover:text-indigo-500 transition-colors">
-                heroofthevil311 (Device Google User)
+                Admin (Device Google User)
               </span>
               <span className="block text-xs text-slate-500 dark:text-slate-450 font-mono">
-                heroofthevil311@gmail.com
+                admin@workspace.com
               </span>
             </div>
             <span className="text-[10px] bg-indigo-100 dark:bg-indigo-950/30 text-indigo-800 dark:text-indigo-300 font-bold px-2 py-0.5 rounded-full uppercase">

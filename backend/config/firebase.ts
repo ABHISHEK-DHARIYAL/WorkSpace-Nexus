@@ -366,13 +366,30 @@ export async function addDoc(colRef: any, data: any) {
 }
 
 export async function deleteDoc(docRef: any) {
-  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
-    return docRef.delete();
+  let colName = "";
+  let docId = "";
+
+  if (docRef) {
+    if (docRef.type === "doc") {
+      colName = docRef.col;
+      docId = docRef.id;
+    } else {
+      colName = docRef.parent ? docRef.parent.id : "";
+      docId = docRef.id;
+    }
   }
-  const colData = readCollection(docRef.col);
-  if (colData[docRef.id] !== undefined) {
-    delete colData[docRef.id];
-    writeCollection(docRef.col, colData);
+
+  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
+    await docRef.delete();
+  }
+
+  if (colName && docId) {
+    const colData = readCollection(colName);
+    if (colData[docId] !== undefined) {
+      delete colData[docId];
+      writeCollection(colName, colData);
+      console.log(`[Database Service] Cascaded fallback deletion clean for collection: ${colName}, id: ${docId}`);
+    }
   }
 }
 
@@ -535,6 +552,19 @@ console.log("Firebase / fallback local persistent DB loaded.");
 try {
   const users = readCollection("users");
   let updatedUsers = false;
+
+  // Dynamically seed admin@workspace.com as the default primary Admin
+  if (!users["admin@workspace.com"]) {
+    users["admin@workspace.com"] = {
+      email: "admin@workspace.com",
+      role: "admin",
+      isSocial: true,
+      createdAt: new Date().toISOString()
+    };
+    updatedUsers = true;
+    console.log("[Database Service] Seeded default system administrator: admin@workspace.com");
+  }
+
   const nonAdminEmails = ["heroofthevil311@gmail.com", "hshit7534@gmail.com", "rajveer@gmail.com"];
   for (const email of nonAdminEmails) {
     if (users[email] && users[email].role === "admin") {

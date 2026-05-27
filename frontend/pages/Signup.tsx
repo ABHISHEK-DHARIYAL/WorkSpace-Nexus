@@ -8,8 +8,10 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
+  const [googleError, setGoogleError] = useState('');
   const [signupError, setSignupError] = useState('');
-  const { user, login } = useAuth();
+  const { user, login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -35,6 +37,20 @@ const Signup = () => {
     }
   };
 
+  const handleGoogleLoginClick = async () => {
+    setIsGoogleSigningIn(true);
+    setGoogleError('');
+    try {
+      await loginWithGoogle();
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error(err);
+      setGoogleError(err?.message || 'Failed to sign in with Google. Please try again.');
+    } finally {
+      setIsGoogleSigningIn(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 relative">
       <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-100">
@@ -43,6 +59,46 @@ const Signup = () => {
         {signupError && (
           <div className="mb-4 text-xs text-red-600 bg-red-50 p-3 rounded-xl border border-red-100">
             {signupError}
+          </div>
+        )}
+
+        {googleError && (
+          <div className="mb-4 text-xs text-red-650 bg-red-50/70 p-4 rounded-xl border border-red-100 flex flex-col gap-2 shadow-xs transition-all">
+            <div className="flex items-start space-x-2">
+              <span className="text-red-500 font-bold text-sm mt-0.5">⚠️</span>
+              <div className="flex-1">
+                <span className="font-bold text-slate-900 block">Google Authentication Blocked / Cancelled</span>
+                <span className="leading-relaxed text-slate-600 font-medium block mt-0.5">{googleError}</span>
+              </div>
+            </div>
+            
+            {(googleError.toLowerCase().includes('popup') || googleError.toLowerCase().includes('blocked') || googleError.toLowerCase().includes('api-key') || googleError.toLowerCase().includes('invalid')) && (
+              <div className="mt-2.5 pt-2.5 border-t border-red-100/60 flex flex-col gap-2">
+                <div className="text-[11px] text-slate-500 font-semibold leading-relaxed">
+                  💡 Inside embedded browser frames or secure tabs without valid keys, browser restricts popups or API key errors occur. You can bypass this immediately with these verified options:
+                </div>
+                <div className="flex flex-wrap gap-2 pt-0.5">
+                  <a 
+                    href={window.location.href} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex-grow text-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-[10.5px] uppercase transition-colors shadow-xs"
+                  >
+                    Open App in New Tab ↗
+                  </a>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      setEmail('jane.doe@example.com');
+                      setPassword('password123');
+                    }}
+                    className="flex-grow text-center px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg font-bold text-[10.5px] uppercase transition-colors"
+                  >
+                    Quick-Fill Jane Doe User
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -85,7 +141,10 @@ const Signup = () => {
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+
+
+
+        <p className="mt-4 text-center text-sm text-slate-500">
           Already have an account? <Link to="/login" className="text-indigo-600 font-bold hover:underline">Login</Link>
         </p>
       </div>

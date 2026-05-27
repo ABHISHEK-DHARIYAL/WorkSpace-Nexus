@@ -108,18 +108,35 @@ const Navbar: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-1 sm:space-x-3 md:space-x-4">
-              {/* Theme Toggle Button */}
+              {/* Premium Interactive Slide & Rotate Theme Toggle Switch */}
               <button
                 onClick={toggleTheme}
-                className="p-1 sm:p-1.5 rounded-lg hover:bg-[#f4ecd8] dark:hover:bg-[#1e232e] text-[#5b4636] dark:text-[#eee1ba] transition-all relative overflow-hidden"
+                className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-[#f4ecd8] dark:bg-[#1e232e] border border-[#eee1ba] dark:border-[#2d323f] transition-all focus:outline-none focus:ring-1.5 focus:ring-[#5b4636]/40 dark:focus:ring-[#eee1ba]/40 shadow-inner group overflow-hidden"
                 title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
               >
+                <span className="sr-only">Toggle theme</span>
                 <motion.div
-                  initial={false}
-                  animate={{ rotate: theme === 'dark' ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-[#5b4636] dark:bg-[#eee1ba] shadow-md text-white dark:text-[#0f1115]"
+                  animate={{
+                    x: theme === 'dark' ? 20 : 2,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 25
+                  }}
                 >
-                  {theme === 'dark' ? <Sun className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" /> : <Moon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />}
+                  <motion.div
+                    animate={{ rotate: theme === 'dark' ? 360 : 0 }}
+                    transition={{ duration: 0.4, ease: "easeInOut" }}
+                    className="flex items-center justify-center align-middle"
+                  >
+                    {theme === 'dark' ? (
+                      <Sun className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
+                    ) : (
+                      <Moon className="w-3 h-3 text-[#fdf6e3]" />
+                    )}
+                  </motion.div>
                 </motion.div>
               </button>
 

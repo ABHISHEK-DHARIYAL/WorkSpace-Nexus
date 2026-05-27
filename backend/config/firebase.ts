@@ -5,13 +5,28 @@ import bcrypt from "bcryptjs";
 import { ENV } from "./env";
 
 // Local persistent directory for JSON-based mock Firestore
-const DATA_DIR = path.join(process.cwd(), ".data");
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Use /tmp/.data if deployed to Vercel (where root filesystem is read-only)
+const isVercelEnv = !!process.env.VERCEL || !!process.env.NOW_BUILDER;
+const DATA_DIR = isVercelEnv ? path.join("/tmp", ".data") : path.join(process.cwd(), ".data");
+
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn(`[Database Service] Could not initialize DATA_DIR at ${DATA_DIR}, continuing dynamically with fully in-memory fallback state:`, err);
 }
+
+// In-memory collection fallback for environments where local file system writes fail or are restricted
+const memoryCache: Record<string, Record<string, any>> = {};
 
 // Thread-safe / Sync-safe helper to read collection JSON with recovery fallback
 function readCollection(colName: string): Record<string, any> {
+  // Always prefer loaded memory caching for instantaneous performance or fallback integrity
+  if (memoryCache[colName]) {
+    return memoryCache[colName];
+  }
+
   const filePath = path.join(DATA_DIR, `${colName}.json`);
   const backupPath = path.join(DATA_DIR, `${colName}.json.bak`);
 
@@ -20,41 +35,54 @@ function readCollection(colName: string): Record<string, any> {
     return JSON.parse(data || "{}");
   };
 
-  // If main file is missing but backup exists, restore it automatically
-  if (!fs.existsSync(filePath)) {
-    if (fs.existsSync(backupPath)) {
-      console.warn(`[Database Service] LocalDb: File ${filePath} went missing! Instantly recovering from stable backup file.`);
-      try {
-        fs.copyFileSync(backupPath, filePath);
-      } catch (err) {
-        console.error(`[Database Service] LocalDb: Failed to copy backup to main file path:`, err);
-      }
-    } else {
-      return {};
-    }
-  }
-
   try {
-    return readAndParse(filePath);
+    // If main file is missing but backup exists, restore it automatically
+    if (!fs.existsSync(filePath)) {
+      if (fs.existsSync(backupPath)) {
+        console.warn(`[Database Service] LocalDb: File ${filePath} went missing! Instantly recovering from stable backup file.`);
+        try {
+          fs.copyFileSync(backupPath, filePath);
+        } catch (err) {
+          console.error(`[Database Service] LocalDb: Failed to copy backup to main file path:`, err);
+        }
+      } else {
+        memoryCache[colName] = {};
+        return {};
+      }
+    }
+
+    const parsed = readAndParse(filePath);
+    memoryCache[colName] = parsed;
+    return parsed;
   } catch (err) {
     console.error(`[Database Service] LocalDb Error reading collection ${colName}, attempting backup integration recovery:`, err);
-    if (fs.existsSync(backupPath)) {
-      try {
-        const recoveredValue = readAndParse(backupPath);
-        // Copy backup over to fix main file
-        fs.copyFileSync(backupPath, filePath);
-        console.log(`[Database Service] LocalDb: Recovered collection "${colName}" from backup successfully.`);
-        return recoveredValue;
-      } catch (backupReadErr) {
-        console.error(`[Database Service] LocalDb: Backup read failed for ${colName} as well:`, backupReadErr);
+    try {
+      if (fs.existsSync(backupPath)) {
+        try {
+          const recoveredValue = readAndParse(backupPath);
+          // Copy backup over to fix main file
+          fs.copyFileSync(backupPath, filePath);
+          console.log(`[Database Service] LocalDb: Recovered collection "${colName}" from backup successfully.`);
+          memoryCache[colName] = recoveredValue;
+          return recoveredValue;
+        } catch (backupReadErr) {
+          console.error(`[Database Service] LocalDb: Backup read failed for ${colName} as well:`, backupReadErr);
+        }
       }
+    } catch (e) {
+      // Ignore inner backup filesystem check error
     }
-    return {};
+    const fallbackVal = memoryCache[colName] || {};
+    memoryCache[colName] = fallbackVal;
+    return fallbackVal;
   }
 }
 
 // Thread-safe / Sync-safe helper to write collection JSON atomically with rollbacks
 function writeCollection(colName: string, data: Record<string, any>) {
+  // Always update in-memory cache to guarantee immediately visible changes
+  memoryCache[colName] = data;
+
   const filePath = path.join(DATA_DIR, `${colName}.json`);
   const tmpPath = path.join(DATA_DIR, `${colName}.json.tmp`);
   const backupPath = path.join(DATA_DIR, `${colName}.json.bak`);
@@ -75,25 +103,29 @@ function writeCollection(colName: string, data: Record<string, any>) {
     // 3. Atomically rename the temp file to the main database file
     fs.renameSync(tmpPath, filePath);
   } catch (err) {
-    console.error(`[Database Service] LocalDb Error writing collection ${colName}:`, err);
+    console.error(`[Database Service] LocalDb Error writing collection ${colName} to disk:`, err);
     
     // Rollback recovery: if write failed/interrupted, restore the main file from stable backup
-    if (fs.existsSync(backupPath) && !fs.existsSync(filePath)) {
-      try {
-        fs.copyFileSync(backupPath, filePath);
-        console.log(`[Database Service] LocalDb: Rollback successful for ${colName}`);
-      } catch (rollErr) {
-        console.error(`[Database Service] LocalDb: Rollback failed for ${colName}:`, rollErr);
+    try {
+      if (fs.existsSync(backupPath) && !fs.existsSync(filePath)) {
+        try {
+          fs.copyFileSync(backupPath, filePath);
+          console.log(`[Database Service] LocalDb: Rollback successful for ${colName}`);
+        } catch (rollErr) {
+          console.error(`[Database Service] LocalDb: Rollback failed for ${colName}:`, rollErr);
+        }
       }
+    } catch (e) {
+      // Ignore nested fs check error
     }
   } finally {
     // Cleanup temporary file if it was left behind
-    if (fs.existsSync(tmpPath)) {
-      try {
+    try {
+      if (fs.existsSync(tmpPath)) {
         fs.unlinkSync(tmpPath);
-      } catch (unlinkErr) {
-        // Safe to ignore
       }
+    } catch (unlinkErr) {
+      // Safe to ignore
     }
   }
 }

@@ -17,6 +17,26 @@ try {
   console.warn(`[Database Service] Could not initialize DATA_DIR at ${DATA_DIR}, continuing dynamically with fully in-memory fallback state:`, err);
 }
 
+// In Vercel serverless environment, copy seed files from repository's .data folder to /tmp/.data on startup so it has original pre-saved data.
+if (isVercelEnv) {
+  try {
+    const srcDir = path.join(process.cwd(), ".data");
+    if (fs.existsSync(srcDir)) {
+      const files = fs.readdirSync(srcDir);
+      for (const file of files) {
+        const srcPath = path.join(srcDir, file);
+        const destPath = path.join(DATA_DIR, file);
+        if (fs.statSync(srcPath).isFile() && !fs.existsSync(destPath)) {
+          fs.copyFileSync(srcPath, destPath);
+          console.log(`[Database Service] Copied repository seed file to serverless /tmp: ${file}`);
+        }
+      }
+    }
+  } catch (copyErr: any) {
+    console.error("[Database Service] Error copying repository seed data to /tmp/.data:", copyErr.message);
+  }
+}
+
 // In-memory collection fallback for environments where local file system writes fail or are restricted
 const memoryCache: Record<string, Record<string, any>> = {};
 
@@ -101,7 +121,12 @@ function writeCollection(colName: string, data: Record<string, any>) {
     }
 
     // 3. Atomically rename the temp file to the main database file
-    fs.renameSync(tmpPath, filePath);
+    try {
+      fs.renameSync(tmpPath, filePath);
+    } catch (renameErr) {
+      // If rename fails (e.g. EXDEV cross-device link error on container filesystems), fallback to direct write
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    }
   } catch (err) {
     console.error(`[Database Service] LocalDb Error writing collection ${colName} to disk:`, err);
     
@@ -148,9 +173,14 @@ const firebaseConfig = {
 
 const isConfigured = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "remixed-api-key";
 
+// Admin SDK needs a private key/Service Account under serverless Vercel, otherwise it hangs the gRPC thread.
+// So on Vercel, only initialize Admin SDK if a service account private key is detected,
+// otherwise default to local database fallback instantly.
+const shouldInitAdminSdk = isConfigured && (!isVercelEnv || !!process.env.GOOGLE_APPLICATION_CREDENTIALS || !!process.env.FIREBASE_SERVICE_ACCOUNT);
+
 let adminApp: any = null;
 let adminFirestoreInstance: any = null;
-if (isConfigured) {
+if (shouldInitAdminSdk) {
   try {
     const apps = getApps();
     if (apps.length > 0) {

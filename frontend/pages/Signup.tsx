@@ -11,7 +11,7 @@ const Signup = () => {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleError, setGoogleError] = useState('');
   const [signupError, setSignupError] = useState('');
-  const { user, login, loginWithGoogle } = useAuth();
+  const { user, signupWithEmail, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -24,16 +24,11 @@ const Signup = () => {
     e.preventDefault();
     setSignupError('');
     try {
-      const { data } = await api.post('/auth/signup', { email, password });
-      if (data && data.token && data.user) {
-        login(data.token, data.user);
-        navigate('/dashboard');
-      } else {
-        navigate('/login');
-      }
+      await signupWithEmail(email, password);
+      navigate('/dashboard');
     } catch (err: any) {
       console.error(err);
-      setSignupError(err?.response?.data?.message || 'Signup failed. Please try again.');
+      setSignupError(err?.message || 'Signup failed. Please try again.');
     }
   };
 

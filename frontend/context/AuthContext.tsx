@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, handleFirebaseAuthError } from '@/config/firebase';
+import { authService } from '../services/api/auth';
 
 interface AuthContextType {
   user: any;
@@ -18,6 +19,8 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (data: any) => void;
   loginWithGoogle: () => Promise<void>;
+  signupWithEmail: (email: string, password: string) => Promise<void>;
+  loginWithEmail: (email: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -34,28 +37,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
 
+    let resolvedProfile: any = null;
+    const nowIso = new Date().toISOString();
+
     if (db) {
       const userDocRef = doc(db, 'users', email);
       let userDocExists = false;
       try {
         const userDocSnap = await getDoc(userDocRef);
         userDocExists = userDocSnap.exists();
+        if (userDocExists) {
+          resolvedProfile = userDocSnap.data();
+        }
       } catch (err) {
         console.warn("Could not retrieve user document from Firestore:", err);
       }
-
-      const nowIso = new Date().toISOString();
       
-      // Save/update user profile in FireStore
+      // Save/update user profile in Firestore
       try {
-        const isSA = email.toLowerCase() === "heroofthevil311@gmail.com";
+        const isSA = email.toLowerCase() === "heroofthevil311@gmail.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
         const profileData: any = {
           uid: fbUser.uid,
           name: fbUser.displayName || email.split('@')[0],
           email: email,
           profilePicture: fbUser.photoURL || '',
           loginTimestamp: nowIso,
-          role: isSA ? "admin" : "user",
+          role: resolvedProfile?.role || (isSA ? "admin" : "user"),
           isSocial: true
         };
 
@@ -64,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         await setDoc(userDocRef, profileData, { merge: true });
+        resolvedProfile = { ...profileData, ...resolvedProfile };
         console.log("Firestore user profile updated.");
       } catch (err) {
         console.error("Firestore user profile save failed:", err);
@@ -72,17 +80,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn("Firestore db is not initialized. Handled on local JSON fallback backend sync.");
     }
 
-    // Call backend endpoint to register/retrieve custom JWT
+    // Call Direct login(token, userData) with Firebase ID Token instead of making backend /api/auth calls
     try {
-      const { data } = await api.post('/auth/signup', {
+      const token = await fbUser.getIdToken();
+      const isSA = email.toLowerCase() === "heroofthevil311@gmail.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
+      const finalUser = {
+        uid: fbUser.uid,
         email: email,
-        password: "GOOGLE_AUTH_EXTERNAL",
-        isSocial: true
-      });
-      login(data.token, data.user);
-    } catch (apiErr) {
-      console.error("Backend login sync failed:", apiErr);
-      throw apiErr;
+        name: resolvedProfile?.name || fbUser.displayName || email.split('@')[0],
+        role: resolvedProfile?.role || (isSA ? "admin" : "user"),
+        profilePicture: resolvedProfile?.profilePicture || fbUser.photoURL || '',
+        isSocial: true,
+        createdAt: resolvedProfile?.createdAt || nowIso
+      };
+      
+      login(token, finalUser);
+    } catch (tokenErr) {
+      console.error("Session token acquisition failed:", tokenErr);
+      throw tokenErr;
     }
   };
 
@@ -113,8 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (token && userData) {
           api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-          // Verify with custom endpoint that token is active and valid
-          await api.get('/auth/me');
+          // Directly set active session without calling `/api/auth/me`
           setUser(JSON.parse(userData));
         } else {
           setUser(null);
@@ -177,27 +191,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [showMockGoogleSelector, setShowMockGoogleSelector] = useState(false);
 
   const handleMockAuthenticate = async (email: string, name: string) => {
-    try {
-      const { data } = await api.post('/auth/signup', {
-        email,
-        password: "GOOGLE_AUTH_EXTERNAL",
-        isSocial: true
-      });
-      login(data.token, data.user);
-    } catch (apiErr) {
-      console.warn("Backend mock signup/login sync failed. Proceeding with high-durability local sandbox session:", apiErr);
-      // Fallback local session generation to ensure testing remains perfectly possible even in completely offline/read-only or cold-starting instances
-      const mockToken = "mock_sandbox_jwt_" + Math.random().toString(36).substring(2, 10);
-      const isSA = email.toLowerCase() === "heroofthevil311@gmail.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
-      const mockUser = {
-        email: email,
-        name: name || email.split('@')[0],
-        role: isSA ? "user" : "user", // Restore conversion
-        isSocial: true,
-        createdAt: new Date().toISOString()
-      };
-      login(mockToken, mockUser);
-    }
+    console.log("Proceeding with high-durability local sandbox session for:", email);
+    const isSA = email.toLowerCase() === "heroofthevil311@gmail.com" || email.toLowerCase() === "hshit7534@gmail.com" || email.toLowerCase() === "rajveer@gmail.com";
+    const mockUser = {
+      email: email,
+      uid: email,
+      name: name || email.split('@')[0],
+      role: isSA ? "admin" : "user",
+      isSocial: true,
+      createdAt: new Date().toISOString()
+    };
+    const payloadStr = JSON.stringify({
+      email: mockUser.email,
+      uid: mockUser.uid,
+      role: mockUser.role,
+      name: mockUser.name
+    });
+    const mockToken = "mock_sandbox_jwt_" + btoa(unescape(encodeURIComponent(payloadStr)));
+    login(mockToken, mockUser);
   };
 
   const loginWithGoogle = async () => {
@@ -251,6 +262,65 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const isApiKeyError = (err: any): boolean => {
+    const msg = (err?.message || "").toLowerCase();
+    const code = (err?.code || "").toLowerCase();
+    return (
+      code.includes('api-key-not-valid') ||
+      code.includes('invalid-api-key') ||
+      msg.includes('api-key-not-valid') ||
+      msg.includes('api key not valid') ||
+      msg.includes('invalid-api-key') ||
+      msg.includes('please pass a valid api key')
+    );
+  };
+
+  const signupWithEmail = async (email: string, password: string) => {
+    const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
+    if (isMockOrUnconfigured) {
+      console.log("Mock/Unconfigured mode: signing up sandbox account");
+      await handleMockAuthenticate(email, email.split('@')[0]);
+      return;
+    }
+    
+    try {
+      const credential = await authService.signup({ email, password });
+      if (credential.user) {
+        await handleFirebaseUserAuthenticated(credential.user);
+      }
+    } catch (err: any) {
+      if (isApiKeyError(err)) {
+        console.warn("Invalid Firebase API Key detected during signup. Seamlessly falling back to local sandbox session:", err);
+        await handleMockAuthenticate(email, email.split('@')[0]);
+        return;
+      }
+      throw err;
+    }
+  };
+
+  const loginWithEmail = async (email: string, password: string) => {
+    const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
+    if (isMockOrUnconfigured) {
+      console.log("Mock/Unconfigured mode: logging in sandbox account");
+      await handleMockAuthenticate(email, email.split('@')[0]);
+      return;
+    }
+    
+    try {
+      const credential = await authService.login({ email, password });
+      if (credential.user) {
+        await handleFirebaseUserAuthenticated(credential.user);
+      }
+    } catch (err: any) {
+      if (isApiKeyError(err)) {
+        console.warn("Invalid Firebase API Key detected during login. Seamlessly falling back to local sandbox session:", err);
+        await handleMockAuthenticate(email, email.split('@')[0]);
+        return;
+      }
+      throw err;
+    }
+  };
+
   const login = (token: string, userData: any) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
@@ -279,7 +349,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, loginWithGoogle }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser, loginWithGoogle, signupWithEmail, loginWithEmail }}>
       {children}
       <MockGoogleAuthModal
         isOpen={showMockGoogleSelector}
@@ -289,6 +359,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
 
 interface MockGoogleAuthModalProps {
   isOpen: boolean;

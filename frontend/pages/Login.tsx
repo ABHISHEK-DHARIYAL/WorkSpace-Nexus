@@ -11,7 +11,7 @@ const Login = () => {
   const [isGoogleSigningIn, setIsGoogleSigningIn] = useState(false);
   const [googleError, setGoogleError] = useState('');
   const [loginError, setLoginError] = useState('');
-  const { user, login, loginWithGoogle } = useAuth();
+  const { user, loginWithEmail, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   React.useEffect(() => {
@@ -24,12 +24,11 @@ const Login = () => {
     e.preventDefault();
     setLoginError('');
     try {
-      const { data } = await api.post('/auth/login', { email, password });
-      login(data.token, data.user);
+      await loginWithEmail(email, password);
       navigate('/dashboard');
     } catch (err: any) {
       console.error(err);
-      setLoginError(err?.response?.data?.message || 'Login failed. Please check your credentials.');
+      setLoginError(err?.message || 'Login failed. Please check your credentials.');
     }
   };
 

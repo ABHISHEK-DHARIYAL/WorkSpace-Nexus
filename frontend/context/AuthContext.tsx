@@ -23,6 +23,32 @@ interface AuthContextType {
   loginWithEmail: (email: string, password: string) => Promise<void>;
 }
 
+const getAuthErrorMessage = (
+  err: any,
+  fallbackMessage: string,
+  duplicateAccountMessage?: string
+): string => {
+  const status = err?.response?.status;
+  const rawMessage = err?.response?.data?.message || err?.message || '';
+  const normalizedMessage = String(rawMessage).trim();
+  const lowerMessage = normalizedMessage.toLowerCase();
+
+  if (
+    duplicateAccountMessage &&
+    (status === 409 ||
+      lowerMessage.includes('already exists') ||
+      lowerMessage.includes('already registered'))
+  ) {
+    return duplicateAccountMessage;
+  }
+
+  if (status >= 500) {
+    return fallbackMessage;
+  }
+
+  return normalizedMessage || fallbackMessage;
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -107,8 +133,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // 1. Wait for Firebase session state initialization if Firebase handles Auth
         let fbUser: FirebaseUser | null = null;
         if (auth) {
+          const firebaseAuth = auth;
           fbUser = await new Promise<FirebaseUser | null>((resolve) => {
-            const unsubscribe = onAuthStateChanged(auth, (u) => {
+            const unsubscribe = onAuthStateChanged(firebaseAuth, (u) => {
               unsubscribe();
               resolve(u);
             });
@@ -150,8 +177,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Monitor Firebase auth session changes for automatic login
   useEffect(() => {
     if (!auth) return;
+    const firebaseAuth = auth;
 
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    const unsubscribe = onAuthStateChanged(firebaseAuth, async (fbUser) => {
       // If Firebase session exists but local JWT token has expired or is missing, trigger auto-login
       if (fbUser && fbUser.email && !localStorage.getItem('token')) {
         console.log("Firebase persistent session detected. Performing auto-login...");
@@ -180,8 +208,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleRedirectResult = async () => {
       if (!auth) return;
+      const firebaseAuth = auth;
       try {
-        const result = await getRedirectResult(auth);
+        const result = await getRedirectResult(firebaseAuth);
         if (result && result.user) {
           setLoading(true);
           await handleFirebaseUserAuthenticated(result.user);
@@ -219,9 +248,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithGoogle = async () => {
-    // If we recognize Firebase is unconfigured or has credentials missing from environment settings, show the account selector list
-    const isMockOrUnconfigured = !auth || !(auth as any).app?.options?.apiKey || (auth as any).app.options.apiKey === 'remixed-api-key';
-    
+    if (!auth) {
+      console.log("Unconfigured Firebase Auth environment detected. Showing Google account selector list.");
+      setShowMockGoogleSelector(true);
+      return;
+    }
+
+    const firebaseAuth = auth;
+    const isMockOrUnconfigured =
+      !(firebaseAuth as any).app?.options?.apiKey ||
+      (firebaseAuth as any).app.options.apiKey === 'remixed-api-key';
+
     if (isMockOrUnconfigured) {
       console.log("Unconfigured Firebase Auth environment detected. Showing Google account selector list.");
       setShowMockGoogleSelector(true);
@@ -240,24 +277,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isMobile || isIframe) {
         // In iframe or mobile, popup is blocked, so proceed with redirect directly
         try {
-          await signInWithRedirect(auth, provider);
+          await signInWithRedirect(firebaseAuth, provider);
         } catch (redirectErr) {
           console.warn("signInWithRedirect failed, attempting popup instead:", redirectErr);
-          const result = await signInWithPopup(auth, provider);
+          const result = await signInWithPopup(firebaseAuth, provider);
           if (result && result.user) {
             await handleFirebaseUserAuthenticated(result.user);
           }
         }
       } else {
         try {
-          const result = await signInWithPopup(auth, provider);
+          const result = await signInWithPopup(firebaseAuth, provider);
           if (result && result.user) {
             await handleFirebaseUserAuthenticated(result.user);
           }
         } catch (popupErr: any) {
           if (popupErr.code === 'auth/popup-blocked' || popupErr.message?.includes('popup-blocked')) {
             console.warn("Popup blocked. Falling back to redirect...");
-            await signInWithRedirect(auth, provider);
+            await signInWithRedirect(firebaseAuth, provider);
           } else {
             throw popupErr;
           }
@@ -292,8 +329,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(response.data?.message || 'Signup failed.');
       }
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || err?.message || 'Signup failed.';
-      throw new Error(errorMsg);
+      const normalizedMessage = getAuthErrorMessage(
+        err,
+        'We could not create your account right now. If you already registered, try logging in with the same email and password.',
+        'An account with this email already exists. Signing you in instead.'
+      );
+
+      const lowerMessage = normalizedMessage.toLowerCase();
+      const isExistingAccount =
+        err?.response?.status === 409 ||
+        lowerMessage.includes('already exists') ||
+        lowerMessage.includes('already registered');
+
+      if (isExistingAccount) {
+        try {
+          await loginWithEmail(email, password);
+          return;
+        } catch {
+          throw new Error('This account already exists. Please log in with your existing password.');
+        }
+      }
+
+      throw new Error(normalizedMessage);
     }
   };
 
@@ -307,7 +364,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error(response.data?.message || 'Login failed.');
       }
     } catch (err: any) {
-      const errorMsg = err?.response?.data?.message || err?.message || 'Incorrect email address or password. Please try again.';
+      const errorMsg = getAuthErrorMessage(
+        err,
+        'We could not log you in right now. Please verify your credentials and try again.'
+      ) || 'Incorrect email address or password. Please try again.';
       throw new Error(errorMsg);
     }
   };
@@ -392,7 +452,7 @@ const MockGoogleAuthModal: React.FC<MockGoogleAuthModalProps> = ({ isOpen, onClo
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200">
         {/* Header matching Google style */}
         <div className="p-6 text-center border-b border-slate-100 dark:border-slate-800">
@@ -531,7 +591,7 @@ const MockGoogleAuthModal: React.FC<MockGoogleAuthModalProps> = ({ isOpen, onClo
               value={customEmail}
               onChange={(e) => setCustomEmail(e.target.value)}
               disabled={isSubmitting}
-              className="flex-grow p-2.5 text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
+              className="grow p-2.5 text-sm border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono"
               required
             />
             <button

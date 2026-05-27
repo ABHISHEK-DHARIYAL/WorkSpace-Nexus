@@ -226,14 +226,13 @@ const firebaseConfig = {
 const isConfigured =
   !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "remixed-api-key";
 
-// Admin SDK needs a private key/Service Account under serverless Vercel, otherwise it hangs the gRPC thread.
-// So on Vercel, only initialize Admin SDK if a service account private key is detected,
-// otherwise default to local database fallback instantly.
-const shouldInitAdminSdk =
-  isConfigured &&
-  (!isVercelEnv ||
-    !!process.env.GOOGLE_APPLICATION_CREDENTIALS ||
-    !!process.env.FIREBASE_SERVICE_ACCOUNT);
+// Only initialize the Admin SDK when explicit admin credentials are present.
+// Without them, local development should use the JSON-backed fallback immediately
+// instead of stalling startup while gRPC attempts to discover credentials.
+const hasAdminCredentials =
+  !!process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+  !!process.env.FIREBASE_SERVICE_ACCOUNT;
+const shouldInitAdminSdk = isConfigured && hasAdminCredentials;
 
 let adminApp: any = null;
 let adminFirestoreInstance: any = null;

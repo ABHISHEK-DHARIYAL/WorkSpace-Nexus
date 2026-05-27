@@ -14,11 +14,10 @@ export class AuthController {
       sendSuccess(res, result, 201);
     } catch (error: any) {
       console.error("[AuthController.signup] Error:", error.message);
-      sendError(
-        res,
-        error.message,
-        error.message === "User already exists" ? 409 : 400
-      );
+      const isDuplicateUser =
+        typeof error.message === "string" &&
+        error.message.toLowerCase().includes("already exists");
+      sendError(res, error.message, isDuplicateUser ? 409 : 400);
     }
   }
 

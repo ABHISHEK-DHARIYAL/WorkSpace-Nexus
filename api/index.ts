@@ -1,6 +1,29 @@
 import { createApp } from "../backend/app";
 
-let appPromise: any = null;
+let appInstance: any = null;
+let appPromise: Promise<any> | null = null;
+
+async function getApp() {
+  if (appInstance) {
+    return appInstance;
+  }
+
+  if (!appPromise) {
+    console.log("[Vercel API Handler] Initializing Express app...");
+    appPromise = createApp()
+      .then((app) => {
+        appInstance = app;
+        return app;
+      })
+      .catch((err) => {
+        appPromise = null;
+        console.error("[Vercel API Handler] Express app initialization failed:", err);
+        throw err;
+      });
+  }
+
+  return appPromise;
+}
 
 export default async function handler(req: any, res: any) {
   // Ensure we recognize standard production delivery in serverless environments
@@ -10,13 +33,7 @@ export default async function handler(req: any, res: any) {
 
   try {
     console.log(`[Vercel API Handler] ${req.method} ${req.url}`);
-
-    if (!appPromise) {
-      console.log("[Vercel API Handler] Initializing Express app...");
-      appPromise = createApp();
-    }
-
-    const app = await appPromise;
+    const app = await getApp();
     console.log("[Vercel API Handler] Express app ready, routing request...");
 
     // Delegate the request execution directly to our Express app and wait for completion

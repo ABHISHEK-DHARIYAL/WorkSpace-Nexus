@@ -12,5 +12,19 @@
     "role": "user",
     "isSocial": false,
     "createdAt": "2026-05-26T07:45:46.787Z"
+  },
+  "rajveer@gmail.com": {
+    "email": "rajveer@gmail.com",
+    "password": "$2b$10$1vHW18h.0J03iFnkhqgG.OkPZsF1DeppFCw7FJbAafZcbU/umMh..",
+    "role": "user",
+    "isSocial": false,
+    "createdAt": "2026-05-26T21:04:02.774Z"
+  },
+  "acacw@gmail.com": {
+    "email": "acacw@gmail.com",
+    "password": "$2b$10$aMNwvf6r05FKxydaW.5I7ue2PdrQNBV6dZB7ZB2BTMkH2WIz5BdO.",
+    "role": "user",
+    "isSocial": false,
+    "createdAt": "2026-05-27T10:54:40.619Z"
   }
 }

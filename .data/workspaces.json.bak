@@ -1,0 +1,18 @@
+{
+  "main-rajveer-gmail-com": {
+    "name": "Main Workspace",
+    "description": "Your default workspace for projects.",
+    "owner": "rajveer@gmail.com",
+    "createdAt": "2026-05-27T10:48:13.031Z",
+    "updatedAt": "2026-05-27T10:48:13.031Z",
+    "projectCount": 0
+  },
+  "main-hero-gmail-com": {
+    "name": "Main Workspace",
+    "description": "Your default workspace for projects.",
+    "owner": "hero@gmail.com",
+    "createdAt": "2026-05-27T10:48:33.422Z",
+    "updatedAt": "2026-05-27T10:48:33.422Z",
+    "projectCount": 0
+  }
+}

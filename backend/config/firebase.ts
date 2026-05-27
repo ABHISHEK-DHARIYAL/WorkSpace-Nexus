@@ -559,10 +559,30 @@ try {
       email: "admin@workspace.com",
       role: "admin",
       isSocial: true,
+      password: bcrypt.hashSync("password123", 10),
       createdAt: new Date().toISOString()
     };
     updatedUsers = true;
     console.log("[Database Service] Seeded default system administrator: admin@workspace.com");
+  } else if (!users["admin@workspace.com"].password) {
+    users["admin@workspace.com"].password = bcrypt.hashSync("password123", 10);
+    updatedUsers = true;
+  }
+
+  // Seed jane.doe@example.com so standard sandbox option remains accessible
+  if (!users["jane.doe@example.com"]) {
+    users["jane.doe@example.com"] = {
+      email: "jane.doe@example.com",
+      role: "user",
+      isSocial: true,
+      password: bcrypt.hashSync("password123", 10),
+      createdAt: new Date().toISOString()
+    };
+    updatedUsers = true;
+    console.log("[Database Service] Seeded default standard sandbox user: jane.doe@example.com");
+  } else if (!users["jane.doe@example.com"].password) {
+    users["jane.doe@example.com"].password = bcrypt.hashSync("password123", 10);
+    updatedUsers = true;
   }
 
   const nonAdminEmails = ["heroofthevil311@gmail.com", "hshit7534@gmail.com", "rajveer@gmail.com"];

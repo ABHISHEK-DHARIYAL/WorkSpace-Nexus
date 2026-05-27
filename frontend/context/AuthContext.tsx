@@ -283,48 +283,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signupWithEmail = async (email: string, password: string) => {
-    const isMockOrUnconfigured = !auth || !(auth as any).app?.options?.apiKey || (auth as any).app.options.apiKey === 'remixed-api-key';
-    if (isMockOrUnconfigured) {
-      console.log("Mock/Unconfigured mode: signing up sandbox account");
-      await handleMockAuthenticate(email, email.split('@')[0]);
-      return;
-    }
-    
     try {
-      const credential = await authService.signup({ email, password });
-      if (credential.user) {
-        await handleFirebaseUserAuthenticated(credential.user);
+      const response = await api.post('/auth/signup', { email, password });
+      if (response.data && response.data.token) {
+        const { token, user: userData } = response.data;
+        login(token, userData);
+      } else {
+        throw new Error(response.data?.message || 'Signup failed.');
       }
     } catch (err: any) {
-      if (isApiKeyError(err)) {
-        console.warn("Invalid Firebase API Key detected during signup. Seamlessly falling back to local sandbox session:", err);
-        await handleMockAuthenticate(email, email.split('@')[0]);
-        return;
-      }
-      throw err;
+      const errorMsg = err?.response?.data?.message || err?.message || 'Signup failed.';
+      throw new Error(errorMsg);
     }
   };
 
   const loginWithEmail = async (email: string, password: string) => {
-    const isMockOrUnconfigured = !auth || !(auth as any).app?.options?.apiKey || (auth as any).app.options.apiKey === 'remixed-api-key';
-    if (isMockOrUnconfigured) {
-      console.log("Mock/Unconfigured mode: logging in sandbox account");
-      await handleMockAuthenticate(email, email.split('@')[0]);
-      return;
-    }
-    
     try {
-      const credential = await authService.login({ email, password });
-      if (credential.user) {
-        await handleFirebaseUserAuthenticated(credential.user);
+      const response = await api.post('/auth/login', { email, password });
+      if (response.data && response.data.token) {
+        const { token, user: userData } = response.data;
+        login(token, userData);
+      } else {
+        throw new Error(response.data?.message || 'Login failed.');
       }
     } catch (err: any) {
-      if (isApiKeyError(err)) {
-        console.warn("Invalid Firebase API Key detected during login. Seamlessly falling back to local sandbox session:", err);
-        await handleMockAuthenticate(email, email.split('@')[0]);
-        return;
-      }
-      throw err;
+      const errorMsg = err?.response?.data?.message || err?.message || 'Incorrect email address or password. Please try again.';
+      throw new Error(errorMsg);
     }
   };
 

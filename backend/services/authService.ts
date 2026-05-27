@@ -32,24 +32,8 @@ export class AuthService {
         return { token, user: { email: cleanEmail, role: storedRole } };
       }
 
-      // If the user already exists and submits standard password registration, check if the password matches.
-      // If it does, automatically sign them in; if it does not, update the password to the newly provided one and log them in. This completely eliminates "User already exists" errors.
-      if (user && password) {
-        const storedRole = user.role || role;
-        const isMatch = user.password ? await bcrypt.compare(password, user.password) : false;
-        
-        if (!isMatch) {
-          const hashedPassword = await bcrypt.hash(password, 10);
-          await setDoc(userRef, { password: hashedPassword }, { merge: true });
-        }
-        
-        const token = jwt.sign({ email: cleanEmail, role: storedRole }, ENV.JWT_SECRET, { expiresIn: "1d" });
-        return { token, user: { email: cleanEmail, role: storedRole } };
-      }
-
-      const storedRole = user.role || role;
-      const token = jwt.sign({ email: cleanEmail, role: storedRole }, ENV.JWT_SECRET, { expiresIn: "1d" });
-      return { token, user: { email: cleanEmail, role: storedRole } };
+      // If the user already exists during standard registration, reject it to prevent bypassing login.
+      throw new Error("Signup failed. Account already exists. Please log in instead.");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);

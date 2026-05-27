@@ -17,22 +17,8 @@ const ensureUserInDb = async (email: string, uid?: string) => {
     if (userDoc.exists()) {
       return userDoc.data() as any;
     }
-
-    // Authenticated user exists but has no matching record in our persistent backend storage.
-    // This happens for first-time Google logins or sandbox resets. We automatically seed/re-register them.
-    const isSA = cleanEmail === "admin@workspace.com" || cleanEmail === "hshit7534@gmail.com" || cleanEmail === "rajveer@gmail.com";
-    const newUser = {
-      email: cleanEmail,
-      role: isSA ? "admin" : "user",
-      uid: uid || cleanEmail,
-      isSocial: true,
-      createdAt: new Date().toISOString()
-    };
-    await setDoc(userRef, newUser);
-    console.log(`[Auth Middleware] Dynamically registered authenticated user in database: ${cleanEmail}`);
-    return newUser;
   } catch (err) {
-    console.error("[Auth Middleware] Error ensuring user in db:", err);
+    console.error("[Auth Middleware] Error checking user in db:", err);
   }
   return null;
 };

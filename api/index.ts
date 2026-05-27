@@ -14,16 +14,40 @@ export default async function handler(req: any, res: any) {
     }
     const app = await appPromise;
     
-    // Normalize req.url using Vercel router headers so Express routing matches the original URL perfectly.
-    // This is vital when rewrites map '/api/(.*)' -> '/api/index.ts'
-    const originalPath = req.headers["x-vercel-forwarded-path"] || req.headers["x-matched-path"] || req.headers["x-forwarded-uri"];
-    if (originalPath && typeof originalPath === "string") {
+    // Robust alignment of req.url using Vercel routing headers to guarantee physical Express route matches
+    let originalPath = "";
+    
+    if (typeof req.headers["x-vercel-forwarded-path"] === "string" && req.headers["x-vercel-forwarded-path"]) {
+      originalPath = req.headers["x-vercel-forwarded-path"];
+    } else if (typeof req.headers["x-forwarded-uri"] === "string" && req.headers["x-forwarded-uri"]) {
+      originalPath = req.headers["x-forwarded-uri"];
+    } else if (typeof req.headers["x-matched-path"] === "string" && req.headers["x-matched-path"]) {
+      const match = req.headers["x-matched-path"];
+      // Avoid using x-matched-path if it's just the serverless entrypoint index file path itself
+      if (!match.endsWith("index.ts") && !match.endsWith("index.js") && !match.endsWith("index.cjs") && !match.includes("/api/index")) {
+        originalPath = match;
+      }
+    }
+
+    if (originalPath) {
       const urlObj = new URL(req.url, "http://localhost");
-      const alignedUrl = originalPath + urlObj.search;
-      console.log(`[Vercel Serverless Routing] Aligning req.url from "${req.url}" to original path: "${alignedUrl}"`);
+      let alignedUrl = originalPath;
+      if (!alignedUrl.startsWith("/api") && alignedUrl.startsWith("/")) {
+        alignedUrl = "/api" + alignedUrl;
+      }
+      alignedUrl = alignedUrl + urlObj.search;
+      console.log(`[Vercel Serverless Routing] Aligning req.url from "${req.url}" to: "${alignedUrl}"`);
       req.url = alignedUrl;
     } else {
-      console.log(`[Vercel Serverless Routing] Invoking handler directly for req.url: "${req.url}"`);
+      // Direct invocation fallback: Prefix with /api if missing to match Express routes
+      if (req.url && !req.url.startsWith("/api") && !req.url.startsWith("/api/")) {
+        const urlObj = new URL(req.url, "http://localhost");
+        const alignedUrl = "/api" + (urlObj.pathname.startsWith("/") ? "" : "/") + urlObj.pathname + urlObj.search;
+        console.log(`[Vercel Serverless Routing] Prefix missing "/api". Aligning req.url from "${req.url}" to: "${alignedUrl}"`);
+        req.url = alignedUrl;
+      } else {
+        console.log(`[Vercel Serverless Routing] Invoking handler directly for req.url: "${req.url}"`);
+      }
     }
 
     // Delegate the request execution directly to our Express app and wait for completion

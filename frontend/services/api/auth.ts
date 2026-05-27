@@ -14,6 +14,54 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '@/config/firebase';
 
+const SANDBOX_USERS_KEY = 'workspace_nexus_sandbox_users';
+
+type SandboxUserRecord = {
+  email: string;
+  password: string;
+  name: string;
+  role: 'admin' | 'user';
+  isSocial: boolean;
+  createdAt: string;
+};
+
+const normalizeEmail = (email: string) => (email || '').trim().toLowerCase();
+
+const isSandboxAdmin = (email: string) => {
+  const normalized = normalizeEmail(email);
+  return [
+    'heroofthevil311@gmail.com',
+    'hshit7534@gmail.com',
+    'rajveer@gmail.com',
+    'rajveerhelloworld@gmail.com',
+  ].includes(normalized);
+};
+
+const readSandboxUsers = (): Record<string, SandboxUserRecord> => {
+  try {
+    const raw = localStorage.getItem(SANDBOX_USERS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    console.warn('Failed to read sandbox users from localStorage:', err);
+    return {};
+  }
+};
+
+const writeSandboxUsers = (users: Record<string, SandboxUserRecord>) => {
+  localStorage.setItem(SANDBOX_USERS_KEY, JSON.stringify(users));
+};
+
+const getCurrentSessionUserEmail = () => {
+  try {
+    const rawUser = localStorage.getItem('user');
+    if (!rawUser) return '';
+    const parsed = JSON.parse(rawUser);
+    return normalizeEmail(parsed?.email || '');
+  } catch {
+    return '';
+  }
+};
+
 export const mapAuthError = (err: any): string => {
   const code = err?.code || '';
   const msg = err?.message || '';
@@ -43,6 +91,47 @@ export const mapAuthError = (err: any): string => {
 };
 
 export const authService = {
+  loginSandbox: async (data: any) => {
+    const email = normalizeEmail(data?.email || '');
+    const password = data?.password || '';
+    const users = readSandboxUsers();
+    const user = users[email];
+
+    if (!user) {
+      throw new Error('No account found for this email. Please sign up first.');
+    }
+
+    if (user.password !== password) {
+      throw new Error('Incorrect email address or password. Please try again.');
+    }
+
+    return user;
+  },
+
+  signupSandbox: async (data: any) => {
+    const email = normalizeEmail(data?.email || '');
+    const password = data?.password || '';
+    const users = readSandboxUsers();
+
+    if (users[email]) {
+      throw new Error('An account already exists for this email. Please sign in instead.');
+    }
+
+    const nowIso = new Date().toISOString();
+    const user: SandboxUserRecord = {
+      email,
+      password,
+      name: email.split('@')[0] || 'Member',
+      role: isSandboxAdmin(email) ? 'admin' : 'user',
+      isSocial: false,
+      createdAt: nowIso,
+    };
+
+    users[email] = user;
+    writeSandboxUsers(users);
+    return user;
+  },
+
   login: async (data: any) => {
     if (!auth) {
       throw new Error("Firebase Auth is unconfigured.");
@@ -73,7 +162,25 @@ export const authService = {
         throw new Error(mapAuthError(err));
       }
     }
-    // Sandbox / Mock session mode: succeed gracefully
+
+    const email = getCurrentSessionUserEmail();
+    if (!email) {
+      throw new Error('No active sandbox account was found.');
+    }
+
+    const users = readSandboxUsers();
+    const user = users[email];
+    if (!user) {
+      throw new Error('This account no longer exists. Please sign up again.');
+    }
+
+    users[email] = {
+      ...user,
+      password: data.password,
+      isSocial: false,
+    };
+    writeSandboxUsers(users);
+
     console.log("Mock updatePassword resolved successfully.");
     return true;
   },
@@ -237,7 +344,16 @@ export const authService = {
         }
       }
     }
-    // Sandbox / Mock session mode: succeed gracefully
+
+    const email = getCurrentSessionUserEmail();
+    if (email) {
+      const users = readSandboxUsers();
+      if (users[email]) {
+        delete users[email];
+        writeSandboxUsers(users);
+      }
+    }
+
     console.log("Mock deleteAccount resolved successfully.");
     return true;
   }

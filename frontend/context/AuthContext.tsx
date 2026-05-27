@@ -218,6 +218,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login(mockToken, mockUser);
   };
 
+  const loginSandboxUser = async (email: string, password: string) => {
+    const sandboxUser = await authService.loginSandbox({ email, password });
+    await handleMockAuthenticate(
+      sandboxUser.email,
+      sandboxUser.name || sandboxUser.email.split('@')[0]
+    );
+  };
+
+  const signupSandboxUser = async (email: string, password: string) => {
+    const sandboxUser = await authService.signupSandbox({ email, password });
+    await handleMockAuthenticate(
+      sandboxUser.email,
+      sandboxUser.name || sandboxUser.email.split('@')[0]
+    );
+  };
+
   const loginWithGoogle = async () => {
     // If we recognize Firebase is unconfigured or has credentials missing from environment settings, show the account selector list
     const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
@@ -286,7 +302,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
     if (isMockOrUnconfigured) {
       console.log("Mock/Unconfigured mode: signing up sandbox account");
-      await handleMockAuthenticate(email, email.split('@')[0]);
+      await signupSandboxUser(email, password);
       return;
     }
     
@@ -298,7 +314,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       if (isApiKeyError(err)) {
         console.warn("Invalid Firebase API Key detected during signup. Seamlessly falling back to local sandbox session:", err);
-        await handleMockAuthenticate(email, email.split('@')[0]);
+        await signupSandboxUser(email, password);
         return;
       }
       throw err;
@@ -309,7 +325,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const isMockOrUnconfigured = !auth || !import.meta.env.VITE_FIREBASE_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY === 'remixed-api-key';
     if (isMockOrUnconfigured) {
       console.log("Mock/Unconfigured mode: logging in sandbox account");
-      await handleMockAuthenticate(email, email.split('@')[0]);
+      await loginSandboxUser(email, password);
       return;
     }
     
@@ -321,7 +337,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err: any) {
       if (isApiKeyError(err)) {
         console.warn("Invalid Firebase API Key detected during login. Seamlessly falling back to local sandbox session:", err);
-        await handleMockAuthenticate(email, email.split('@')[0]);
+        await loginSandboxUser(email, password);
         return;
       }
       throw err;

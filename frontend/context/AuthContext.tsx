@@ -320,6 +320,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signupWithEmail = async (email: string, password: string) => {
+    if (auth) {
+      try {
+        const credential = await authService.signup({ email, password });
+        await handleFirebaseUserAuthenticated(credential.user);
+        return;
+      } catch (err: any) {
+        const normalizedMessage = getAuthErrorMessage(
+          err,
+          'We could not create your account right now. If you already registered, try logging in with the same email and password.',
+          'An account with this email already exists. Signing you in instead.'
+        );
+
+        const lowerMessage = normalizedMessage.toLowerCase();
+        const isExistingAccount =
+          err?.response?.status === 409 ||
+          lowerMessage.includes('already exists') ||
+          lowerMessage.includes('already registered') ||
+          lowerMessage.includes('already in use');
+
+        if (isExistingAccount) {
+          try {
+            await loginWithEmail(email, password);
+            return;
+          } catch {
+            throw new Error('This account already exists. Please log in with your existing password.');
+          }
+        }
+
+        throw new Error(normalizedMessage);
+      }
+    }
+
     try {
       const response = await api.post('/auth/signup', { email, password });
       if (response.data && response.data.token) {
@@ -355,6 +387,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginWithEmail = async (email: string, password: string) => {
+    if (auth) {
+      try {
+        const credential = await authService.login({ email, password });
+        await handleFirebaseUserAuthenticated(credential.user);
+        return;
+      } catch (err: any) {
+        const errorMsg = getAuthErrorMessage(
+          err,
+          'We could not log you in right now. Please verify your credentials and try again.'
+        ) || 'Incorrect email address or password. Please try again.';
+        throw new Error(errorMsg);
+      }
+    }
+
     try {
       const response = await api.post('/auth/login', { email, password });
       if (response.data && response.data.token) {

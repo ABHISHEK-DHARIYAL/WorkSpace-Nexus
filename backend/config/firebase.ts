@@ -178,19 +178,34 @@ export async function testFirestoreConnection() {
   try {
     // A quick, lightweight read on a non-existent database key to test credentials and access permissions.
     // Wrap with a strict 2-second timeout to prevent serverless execution hanging on unconfigured Firestore connections.
+    // To absolutely prevent unhandled promise rejections if the check times out but eventually fails/rejects in the background,
+    // we convert BOTH the Firestore check and the timeout check into non-rejecting promises that resolve with a status object.
     const promiseGet = adminFirestoreInstance.collection("_startup_check_").limit(1).get();
-    const promiseTimeout = new Promise<never>((_, reject) => 
-      setTimeout(() => reject(new Error("Firestore connection check timed out")), 2000)
+    const safePromiseGet = promiseGet.then(
+      (val) => ({ status: "success" as const, val }),
+      (err: any) => {
+        console.log("[Database Service] Background Firestore promise settled/rejected (preventing unhandled crash):", err.message);
+        return { status: "error" as const, err };
+      }
     );
-    await Promise.race([promiseGet, promiseTimeout]);
+    const promiseTimeout = new Promise<{ status: "timeout"; err: Error }>((resolve) => 
+      setTimeout(() => resolve({ status: "timeout" as const, err: new Error("Firestore connection check timed out") }), 2000)
+    );
+    const result = await Promise.race([safePromiseGet, promiseTimeout]);
 
-    console.log("[Database Service] Firestore connection test: SUCCESS. Live cloud database is fully accessible!");
-    isFirestoreWorking = true;
+    if (result.status === "success") {
+      console.log("[Database Service] Firestore connection test: SUCCESS. Live cloud database is fully accessible!");
+      isFirestoreWorking = true;
 
-    // Automatically migrate local JSON backup data to live Cloud Firestore in the background
-    runBackgroundMigration().catch(migrateErr => {
-      console.error("[Database Service] Live Firestore background migration error:", migrateErr);
-    });
+      // Automatically migrate local JSON backup data to live Cloud Firestore in the background
+      runBackgroundMigration().catch(migrateErr => {
+        console.error("[Database Service] Live Firestore background migration error:", migrateErr);
+      });
+    } else {
+      console.log(`[Database Service] Firestore connection test resolved without success (${result.status}):`, result.err?.message || "No error details available");
+      console.log("[Database Service] Backend mode: local persistent JSON database (Active & Fully Operational).");
+      isFirestoreWorking = false;
+    }
   } catch (err: any) {
     // Standardize backend storage mode gracefully as a secure, high-performance local persistence store
     console.log("[Database Service] Backend mode: local persistent JSON database (Active & Fully Operational).");

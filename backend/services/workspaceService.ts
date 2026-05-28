@@ -1,6 +1,19 @@
-const { collection, getDocs, getDoc, doc, addDoc, setDoc, updateDoc, deleteDoc, query, where, orderBy, db } = require("../config/db");
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc,
+  setDoc,
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy,
+  db
+} from "../config/firebase";
 
-class WorkspaceService {
+export class WorkspaceService {
   static async getAllByUser(userId: string) {
     const q = query(
       collection(db, "workspaces"), 
@@ -119,8 +132,3 @@ class WorkspaceService {
     return { message: "Workspace deleted successfully" };
   }
 }
-
-
-module.exports = {
-  WorkspaceService
-};

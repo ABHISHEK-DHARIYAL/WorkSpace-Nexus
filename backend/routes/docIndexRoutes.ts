@@ -1,8 +1,7 @@
-const { Router } = require("express");
-const { DocIndexController } = require("../controllers/docIndexController");
-const { authenticate } = require("../middleware/auth");
-
-const { checkDb } = require("../middleware/checkDb");
+import { Router } from "express";
+import { DocIndexController } from "../controllers/docIndexController";
+import { authenticate } from "../middleware/auth";
+import { checkDb } from "../middleware/checkDb";
 
 const router = Router();
 
@@ -12,4 +11,4 @@ router.post("/", authenticate, checkDb, DocIndexController.create);
 router.put("/:id", authenticate, checkDb, DocIndexController.update);
 router.delete("/:id", authenticate, checkDb, DocIndexController.delete);
 
-module.exports = router;
+export default router;

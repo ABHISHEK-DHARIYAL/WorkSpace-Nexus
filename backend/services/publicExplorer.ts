@@ -1,6 +1,6 @@
-const { collection, getDocs, db, query, where, doc, updateDoc, deleteDoc, addDoc, getDoc, orderBy } = require("../config/db");
+import { collection, getDocs, db, query, where, doc, updateDoc, deleteDoc, addDoc, getDoc, orderBy } from "../config/firebase";
 
-interface AuditLog {
+export interface AuditLog {
   id?: string;
   adminEmail: string;
   adminName: string;
@@ -13,7 +13,7 @@ interface AuditLog {
   timestamp: string;
 }
 
-class PublicExplorerService {
+export class PublicExplorerService {
   // -------------------------------------------------------------
   // DASHBOARD HUB: SECURE PUBLIC ANALYTICS & HIERARCHY
   // -------------------------------------------------------------
@@ -630,8 +630,3 @@ class PublicExplorerService {
     return { message: "Content and all cascade references permanently purged." };
   }
 }
-
-
-module.exports = {
-  PublicExplorerService
-};

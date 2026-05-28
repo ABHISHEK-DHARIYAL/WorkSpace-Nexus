@@ -1,12 +1,8 @@
-
-const jwt = require("jsonwebtoken");
-
-type Request = import("express").Request;
-type Response = import("express").Response;
-type NextFunction = import("express").NextFunction;
-const { db, doc, getDoc } = require("../config/db");
-const { ENV } = require("../config/env");
-const { sendError } = require("../utils/response");
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import { adminAuth, db, doc, getDoc, setDoc } from "../config/firebase";
+import { ENV } from "../config/env";
+import { sendError } from "../utils/response";
 
 export interface AuthRequest extends Request {
   user?: any;
@@ -27,7 +23,7 @@ const ensureUserInDb = async (email: string, uid?: string) => {
   return null;
 };
 
-const optionalAuthenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const optionalAuthenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     req.user = null;
@@ -57,6 +53,18 @@ const optionalAuthenticate = async (req: AuthRequest, res: Response, next: NextF
         role: "admin",
         uid: "admin@workspace.com"
       };
+    }
+  } else if (token.length > 500) {
+    // Try Firebase Token SECOND
+    try {
+      const decodedToken = await adminAuth.verifyIdToken(token);
+      req.user = { 
+        email: decodedToken.email || "", 
+        role: "user",
+        uid: decodedToken.uid 
+      };
+    } catch (fbErr: any) {
+      req.user = null;
     }
   } else {
     // Custom JWT Verification
@@ -84,7 +92,7 @@ const optionalAuthenticate = async (req: AuthRequest, res: Response, next: NextF
   return next();
 };
 
-const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
     return sendError(res, "Unauthorized: No token provided", 401);
@@ -112,6 +120,21 @@ const authenticate = async (req: AuthRequest, res: Response, next: NextFunction)
         role: "admin",
         uid: "admin@workspace.com"
       };
+    }
+  } else if (token.length > 500) {
+    // Try Firebase Token SECOND
+    try {
+      const decodedToken = await adminAuth.verifyIdToken(token);
+      req.user = { 
+        email: decodedToken.email || "", 
+        role: "user",
+        uid: decodedToken.uid 
+      };
+    } catch (fbErr: any) {
+      if (fbErr.code === 'auth/id-token-expired') {
+        return sendError(res, "Token expired", 401, "EXPIRED");
+      }
+      return sendError(res, "Unauthorized: Invalid session", 401);
     }
   } else {
     // Custom JWT Verification
@@ -143,16 +166,9 @@ const authenticate = async (req: AuthRequest, res: Response, next: NextFunction)
   return next();
 };
 
-const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
   if (req.user?.role !== "admin") {
     return sendError(res, "Forbidden: Admin access required", 403);
   }
   next();
-};
-
-
-module.exports = {
-  optionalAuthenticate,
-  authenticate,
-  isAdmin
 };

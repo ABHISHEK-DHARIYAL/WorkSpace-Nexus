@@ -1,12 +1,9 @@
+import { Response } from "express";
+import { AnnotationService } from "../services/annotationService";
+import { sendSuccess, sendError } from "../utils/response";
+import { AuthRequest } from "../middleware/auth";
 
-const { AnnotationService } = require("../services/annotationService");
-
-type Response = import("express").Response;
-const { sendSuccess, sendError } = require("../utils/response");
-type AuthRequest = import("../middleware/auth").AuthRequest;
-
-
-class AnnotationController {
+export class AnnotationController {
   static async getByPage(req: AuthRequest, res: Response) {
     try {
       const annotations = await AnnotationService.getByPage(req.params.pageId);
@@ -46,8 +43,3 @@ class AnnotationController {
     }
   }
 }
-
-
-module.exports = {
-  AnnotationController
-};

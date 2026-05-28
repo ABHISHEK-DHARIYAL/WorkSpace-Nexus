@@ -1,12 +1,9 @@
+import { Response } from "express";
+import { AuthRequest } from "../middleware/auth";
+import { WorkspaceHubExportService } from "../services/workspaceHubExportService";
+import { sendError } from "../utils/response";
 
-type AuthRequest = import("../middleware/auth").AuthRequest;
-
-
-type Response = import("express").Response;
-const { WorkspaceHubExportService } = require("../services/workspaceHubExportService");
-const { sendError } = require("../utils/response");
-
-class WorkspaceHubExportController {
+export class WorkspaceHubExportController {
   /**
    * GET /export/workspace-hub
    * Combiles and exports all of standard user's Workspace Hub projects inside a single ZIP file.
@@ -33,8 +30,3 @@ class WorkspaceHubExportController {
     }
   }
 }
-
-
-module.exports = {
-  WorkspaceHubExportController
-};

@@ -2,15 +2,13 @@
   "name": "react-example",
   "private": true,
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "tsx backend/server.ts",
-    "build": "vite build && esbuild backend/app.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=backend/app.js && esbuild backend/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "vite build && esbuild backend/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
-    "clean": "rm -rf dist backend/app.js backend/app.js.map dist/server.cjs dist/server.cjs.map",
+    "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
-  },
-  "engines": {
-    "node": "20.x"
   },
   "dependencies": {
     "@google/genai": "^2.6.0",
@@ -37,6 +35,8 @@
     "@tiptap/extension-underline": "^3.23.4",
     "@tiptap/react": "^3.23.4",
     "@tiptap/starter-kit": "^3.23.4",
+    "@types/jsdom": "^28.0.3",
+    "@types/jszip": "^3.4.0",
     "@types/multer": "^2.1.0",
     "@vitejs/plugin-react": "^5.0.4",
     "axios": "^1.16.1",
@@ -45,7 +45,10 @@
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
+    "firebase": "^12.13.0",
+    "firebase-admin": "^13.10.0",
     "helmet": "^8.1.0",
+    "jsdom": "^29.1.1",
     "jsonwebtoken": "^9.0.3",
     "jszip": "^3.10.1",
     "lucide-react": "^0.546.0",

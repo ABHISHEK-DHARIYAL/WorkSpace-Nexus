@@ -1,0 +1,150 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System users with roles and profile metadata.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "profilePicture": { "type": "string" },
+        "loginTimestamp": { "type": "string", "format": "date-time" },
+        "role": { "type": "string", "enum": ["admin", "user"] },
+        "isSocial": { "type": "boolean" },
+        "password": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "password", "role", "createdAt"]
+    },
+    "Content": {
+      "title": "Content",
+      "description": "CMS published items managed by administrators.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "body": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "slug", "body", "createdBy", "createdAt"]
+    },
+    "Workspace": {
+      "title": "Workspace",
+      "description": "Organizational container for documents and listings.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "owner": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "projectCount": { "type": "number" }
+      },
+      "required": ["name", "owner", "createdAt", "updatedAt"]
+    },
+    "Listing": {
+      "title": "Listing",
+      "description": "Document listings / projects containing pages.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "workspaceId": { "type": "string" },
+        "owner": { "type": "string" },
+        "visibility": { "type": "string", "enum": ["private", "public"] },
+        "tags": { "type": "array" },
+        "pages": { "type": "array" },
+        "index": { "type": "array" },
+        "highlights": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "owner", "workspaceId", "createdAt", "updatedAt"]
+    },
+    "Page": {
+      "title": "Page",
+      "description": "A single page of document content belonging to a listing.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "listingId": { "type": "string" },
+        "parentIndexId": { "type": "string" },
+        "indexId": { "type": "string" },
+        "position": { "type": "number" },
+        "level": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "content", "listingId", "createdAt", "updatedAt"]
+    },
+    "Highlight": {
+      "title": "Highlight",
+      "description": "User highlights overlays on a page for visual markup.",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string" },
+        "pageId": { "type": "string" },
+        "userId": { "type": "string" },
+        "text": { "type": "string" },
+        "color": { "type": "string" },
+        "annotationType": { "type": "string" },
+        "style": { "type": "string" },
+        "startOffset": { "type": "number" },
+        "endOffset": { "type": "number" },
+        "selectedRange": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["listingId", "pageId", "userId", "createdAt", "updatedAt"]
+    },
+    "Annotation": {
+      "title": "Annotation",
+      "description": "Comments and annotations attached to specific pages.",
+      "type": "object",
+      "properties": {
+        "pageId": { "type": "string" },
+        "type": { "type": "string" },
+        "content": { "type": "string" },
+        "position": { "type": "object" },
+        "userId": { "type": "string" },
+        "parentAnnotationId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["pageId", "userId", "content", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and credentials."
+    },
+    "/contents/{contentId}": {
+      "schema": "Content",
+      "description": "Published CMS documents."
+    },
+    "/workspaces/{workspaceId}": {
+      "schema": "Workspace",
+      "description": "System workspaces separating user areas."
+    },
+    "/listings/{listingId}": {
+      "schema": "Listing",
+      "description": "Direct listing documents containing arrays of metadata."
+    },
+    "/pages/{pageId}": {
+      "schema": "Page",
+      "description": "Individual pages of content mapped to listings."
+    },
+    "/highlights/{highlightId}": {
+      "schema": "Highlight",
+      "description": "Visual highlights on page text content."
+    },
+    "/annotations/{annotationId}": {
+      "schema": "Annotation",
+      "description": "Collaborative page annotations/comments."
+    }
+  }
+}

@@ -1,6 +1,15 @@
-const { collection, getDocs, getDoc, doc, addDoc, query, where, db } = require("../config/db");
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  query, 
+  where,
+  db
+} from "../config/firebase";
 
-class HighlightService {
+export class HighlightService {
   static async getAll() {
     const q = collection(db, "highlights");
     const snapshot = await getDocs(q);
@@ -35,8 +44,3 @@ class HighlightService {
     return { id: docRef.id, ...newAnnotation };
   }
 }
-
-
-module.exports = {
-  HighlightService
-};

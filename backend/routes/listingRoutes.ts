@@ -1,8 +1,7 @@
-const { Router } = require("express");
-const { ListingController } = require("../controllers/listingController");
-const { authenticate, optionalAuthenticate } = require("../middleware/auth");
-
-const { checkDb } = require("../middleware/checkDb");
+import { Router } from "express";
+import { ListingController } from "../controllers/listingController";
+import { authenticate, optionalAuthenticate } from "../middleware/auth";
+import { checkDb } from "../middleware/checkDb";
 
 const router = Router();
 
@@ -14,4 +13,4 @@ router.post("/", authenticate, checkDb, ListingController.create);
 router.put("/:id", authenticate, checkDb, ListingController.update);
 router.delete("/:id", authenticate, checkDb, ListingController.delete);
 
-module.exports = router;
+export default router;

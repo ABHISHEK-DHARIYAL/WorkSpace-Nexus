@@ -1,11 +1,11 @@
-const JSZip = require("jszip");
-const { PageExportService } = require("./pageExportService");
-const { IndexExportService } = require("./indexExportService");
-const { AnnotationExportService } = require("./annotationExportService");
-const { BookmarkExportService } = require("./bookmarkExportService");
-const { HighlightExportService } = require("./highlightExportService");
+import JSZip from "jszip";
+import { PageExportService } from "./pageExportService";
+import { IndexExportService } from "./indexExportService";
+import { AnnotationExportService } from "./annotationExportService";
+import { BookmarkExportService } from "./bookmarkExportService";
+import { HighlightExportService } from "./highlightExportService";
 
-class ZipService {
+export class ZipService {
   /**
    * Original generator for a single project zip (kept unchanged for compatibility).
    */
@@ -273,8 +273,3 @@ ${projectData.project.summary || "No project summary provided."}
     return await zip.generateAsync({ type: "nodebuffer" });
   }
 }
-
-
-module.exports = {
-  ZipService
-};

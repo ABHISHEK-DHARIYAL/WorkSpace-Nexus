@@ -1,6 +1,18 @@
-const { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, db } = require("../config/db");
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy,
+  db
+} from "../config/firebase";
 
-class AnnotationService {
+export class AnnotationService {
   static async getByPage(pageId: string) {
     const q = query(
       collection(db, "annotations"),
@@ -41,8 +53,3 @@ class AnnotationService {
     return { message: "Annotation deleted" };
   }
 }
-
-
-module.exports = {
-  AnnotationService
-};

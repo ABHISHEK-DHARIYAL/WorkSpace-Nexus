@@ -1,6 +1,19 @@
-const { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, db } = require("../config/db");
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy,
+  serverTimestamp,
+  db
+} from "../config/firebase";
 
-class ListingService {
+export class ListingService {
   static async getAllByUser(userId: string) {
     const q = query(
       collection(db, "listings"), 
@@ -217,8 +230,3 @@ class ListingService {
     return { message: "Listing and all associated content deleted successfully" };
   }
 }
-
-
-module.exports = {
-  ListingService
-};

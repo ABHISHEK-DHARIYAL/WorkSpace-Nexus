@@ -1,6 +1,17 @@
-const { collection, getDocs, getDoc, doc, addDoc, query, where, deleteDoc, orderBy, db } = require("../config/db");
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  query, 
+  where,
+  deleteDoc,
+  orderBy,
+  db
+} from "../config/firebase";
 
-class ContentService {
+export class ContentService {
   static async getAll() {
     const q = query(collection(db, "contents"), orderBy("createdAt", "desc"));
     const snapshot = await getDocs(q);
@@ -37,8 +48,3 @@ class ContentService {
     return { message: "Content deleted successfully" };
   }
 }
-
-
-module.exports = {
-  ContentService
-};

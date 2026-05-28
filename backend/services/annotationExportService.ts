@@ -1,4 +1,4 @@
-class AnnotationExportService {
+export class AnnotationExportService {
   /**
    * Compiles custom, user-eye clean annotation and comments structured payload representation
    */
@@ -14,8 +14,3 @@ class AnnotationExportService {
     return JSON.stringify(formatted, null, 2);
   }
 }
-
-
-module.exports = {
-  AnnotationExportService
-};

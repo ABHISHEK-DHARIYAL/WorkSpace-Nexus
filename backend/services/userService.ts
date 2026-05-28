@@ -1,6 +1,6 @@
-const { collection, getDocs, db } = require("../config/db");
+import { collection, getDocs, db } from "../config/firebase";
 
-class UserService {
+export class UserService {
   static async getAll() {
     const snapshot = await getDocs(collection(db, "users"));
     return snapshot.docs.map((doc) => {
@@ -10,8 +10,3 @@ class UserService {
     });
   }
 }
-
-
-module.exports = {
-  UserService
-};

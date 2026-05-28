@@ -1,13 +1,9 @@
+import { Request, Response } from "express";
+import { HighlightService } from "../services/highlightService";
+import { sendSuccess, sendError } from "../utils/response";
+import { AuthRequest } from "../middleware/auth";
 
-const { HighlightService } = require("../services/highlightService");
-
-type Request = import("express").Request;
-type Response = import("express").Response;
-const { sendSuccess, sendError } = require("../utils/response");
-type AuthRequest = import("../middleware/auth").AuthRequest;
-
-
-class HighlightController {
+export class HighlightController {
   static async getAll(req: AuthRequest, res: Response) {
     try {
       const highlights = await HighlightService.getAll();
@@ -40,8 +36,3 @@ class HighlightController {
     }
   }
 }
-
-
-module.exports = {
-  HighlightController
-};

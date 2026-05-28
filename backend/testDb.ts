@@ -1,9 +1,9 @@
-const { testDatabaseConnection } = require("./config/db");
-const { ListingService } = require("./services/listingService");
+import { testFirestoreConnection } from "./config/firebase";
+import { ListingService } from "./services/listingService";
 
 async function main() {
   console.log("Starting test-get-by-id diagnostic...");
-  await testDatabaseConnection();
+  await testFirestoreConnection();
   
   const id = "81jk4vr16mplr4rah";
   console.log(`Querying ListingService.getById("${id}"):`);

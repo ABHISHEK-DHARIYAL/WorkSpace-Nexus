@@ -1,9 +1,9 @@
-const { ListingService } = require("./listingService");
-const { WorkspaceService } = require("./workspaceService");
-const { ProjectExporter } = require("./projectExporter");
-const { ZipService } = require("./zipService");
+import { ListingService } from "./listingService";
+import { WorkspaceService } from "./workspaceService";
+import { ProjectExporter } from "./projectExporter";
+import { ZipService } from "./zipService";
 
-class DocumentNexusExportService {
+export class DocumentNexusExportService {
   /**
    * Compiles and exports all of standard user's Document Nexus projects inside a single ZIP file.
    * Only includes listings where addedToNexus === true.
@@ -71,8 +71,3 @@ class DocumentNexusExportService {
     return await ZipService.generateDocumentNexusZip(groupedPayload);
   }
 }
-
-
-module.exports = {
-  DocumentNexusExportService
-};

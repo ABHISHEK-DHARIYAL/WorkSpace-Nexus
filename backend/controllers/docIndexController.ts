@@ -1,11 +1,8 @@
+import { Request, Response } from "express";
+import { DocIndexService } from "../services/docIndexService";
+import { sendSuccess, sendError } from "../utils/response";
 
-const { DocIndexService } = require("../services/docIndexService");
-
-type Request = import("express").Request;
-type Response = import("express").Response;
-const { sendSuccess, sendError } = require("../utils/response");
-
-class DocIndexController {
+export class DocIndexController {
   static async getAll(req: Request, res: Response) {
     try {
       const indices = await DocIndexService.getAll();
@@ -52,8 +49,3 @@ class DocIndexController {
     }
   }
 }
-
-
-module.exports = {
-  DocIndexController
-};

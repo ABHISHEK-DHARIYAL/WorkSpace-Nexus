@@ -1,13 +1,13 @@
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { doc, getDoc, setDoc, deleteDoc, db, collection, query, where, getDocs } = require("../config/db");
-const { ENV } = require("../config/env");
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { doc, getDoc, setDoc, deleteDoc, db, collection, query, where, getDocs } from "../config/firebase";
+import { ENV } from "../config/env";
 
 const isAdminEmail = (email: string): boolean => {
   return false;
 };
 
-class AuthService {
+export class AuthService {
   static async signup({ email, password, isSocial }: any) {
     const cleanEmail = (email || "").trim().toLowerCase();
     const userRef = doc(db, "users", cleanEmail);
@@ -206,8 +206,3 @@ class AuthService {
     return { message: "Account deleted successfully" };
   }
 }
-
-
-module.exports = {
-  AuthService
-};

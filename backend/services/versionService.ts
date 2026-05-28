@@ -1,6 +1,17 @@
-const { collection, getDocs, getDoc, doc, addDoc, query, where, orderBy, limit, db } = require("../config/db");
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  query, 
+  where, 
+  orderBy,
+  limit,
+  db
+} from "../config/firebase";
 
-class VersionService {
+export class VersionService {
   static async createSnapshot(pageId: string, content: string, title: string) {
     const snapshot = {
       pageId,
@@ -23,8 +34,3 @@ class VersionService {
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 }
-
-
-module.exports = {
-  VersionService
-};

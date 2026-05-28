@@ -1,6 +1,6 @@
-const { db, doc, getDoc } = require("../config/db");
+import { db, doc, getDoc } from "../config/firebase";
 
-class PublicSecurityService {
+export class PublicSecurityService {
   /**
    * Asserts if the given user is an administrator.
    */
@@ -56,8 +56,3 @@ class PublicSecurityService {
     }
   }
 }
-
-
-module.exports = {
-  PublicSecurityService
-};

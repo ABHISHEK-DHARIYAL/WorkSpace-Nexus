@@ -1,8 +1,8 @@
-const { ListingService } = require("./listingService");
-const { ProjectExporter } = require("./projectExporter");
-const { ZipService } = require("./zipService");
+import { ListingService } from "./listingService";
+import { ProjectExporter } from "./projectExporter";
+import { ZipService } from "./zipService";
 
-class WorkspaceHubExportService {
+export class WorkspaceHubExportService {
   /**
    * Aggregates and zips all Workspace Hub projects owned by the authenticated user.
    * Ensures that the export excludes Document Nexus projects.
@@ -33,8 +33,3 @@ class WorkspaceHubExportService {
     return await ZipService.generateWorkspaceHubZip(allProjectsData);
   }
 }
-
-
-module.exports = {
-  WorkspaceHubExportService
-};

@@ -1,6 +1,18 @@
-const { collection, getDocs, getDoc, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, db } = require("../config/db");
+import { 
+  collection, 
+  getDocs, 
+  getDoc, 
+  doc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy,
+  db
+} from "../config/firebase";
 
-class DocIndexService {
+export class DocIndexService {
   static async getByProject(projectId: string) {
     const q = query(
       collection(db, "doc_indices"),
@@ -53,8 +65,3 @@ class DocIndexService {
     return { message: "Index item deleted successfully" };
   }
 }
-
-
-module.exports = {
-  DocIndexService
-};

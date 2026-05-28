@@ -1,8 +1,7 @@
-const { Router } = require("express");
-const { HighlightController } = require("../controllers/highlightController");
-const { authenticate } = require("../middleware/auth");
-
-const { checkDb } = require("../middleware/checkDb");
+import { Router } from "express";
+import { HighlightController } from "../controllers/highlightController";
+import { authenticate } from "../middleware/auth";
+import { checkDb } from "../middleware/checkDb";
 
 const router = Router();
 
@@ -10,4 +9,4 @@ router.get("/", authenticate, checkDb, HighlightController.getAll);
 router.get("/:pageId", authenticate, checkDb, HighlightController.getByPage);
 router.post("/", authenticate, checkDb, HighlightController.create);
 
-module.exports = router;
+export default router;

@@ -1,11 +1,10 @@
-const { Router } = require("express");
-const { UserController } = require("../controllers/userController");
-const { authenticate, isAdmin } = require("../middleware/auth");
-
-const { checkDb } = require("../middleware/checkDb");
+import { Router } from "express";
+import { UserController } from "../controllers/userController";
+import { authenticate, isAdmin } from "../middleware/auth";
+import { checkDb } from "../middleware/checkDb";
 
 const router = Router();
 
 router.get("/", authenticate, isAdmin, checkDb, UserController.getAll);
 
-module.exports = router;
+export default router;

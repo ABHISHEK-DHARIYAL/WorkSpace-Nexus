@@ -1,7 +1,8 @@
-const app = require("./app");
-const { ENV } = require("./config/env");
+import { createApp } from "./app";
+import { ENV } from "./config/env";
 
-function startServer() {
+async function startServer() {
+  const app = await createApp();
   const PORT = Number(ENV.PORT);
 
   app.listen(PORT, "0.0.0.0", () => {
@@ -14,11 +15,7 @@ function startServer() {
   });
 }
 
-try {
-  startServer();
-} catch (err) {
+startServer().catch(err => {
   console.error("CRITICAL SERVER START FAILURE:", err);
   process.exit(1);
-}
-
-
+});

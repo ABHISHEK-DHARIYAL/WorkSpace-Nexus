@@ -1,7 +1,8 @@
-const mammoth = require("mammoth");
-const { PageService } = require("./pageService");
-const { ListingService } = require("./listingService");
-const PDFParseModule = require("pdf-parse");
+import mammoth from "mammoth";
+import { PageService } from "./pageService";
+import { ListingService } from "./listingService";
+import { JSDOM } from "jsdom";
+import * as PDFParseModule from "pdf-parse";
 
 // Defensive check for PDFParse constructor
 const getPDFParse = () => {
@@ -30,7 +31,7 @@ export interface ParsedDoc {
   }>;
 }
 
-class DocParserService {
+export class DocParserService {
   /**
    * Main entry point for document parsing
    */
@@ -130,38 +131,14 @@ class DocParserService {
     // Generate HTML from DOCX
     const { value: html } = await mammoth.convertToHtml({ buffer });
     
-    // Extract structure without JSDOM
-    // We parse top-level HTML tags using regex
-    const elementRegex = /<(h1|h2|h3|h4|h5|p|table|ul|ol)[^>]*>([\s\S]*?)<\/\1>/gi;
+    // Create a DOM to manipulate the HTML
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
     
-    interface ChildElement {
-      tagName: string;
-      outerHTML: string;
-      textContent: string;
-    }
-    
-    const children: ChildElement[] = [];
-    let match;
-    while ((match = elementRegex.exec(html)) !== null) {
-      const tagName = match[1].toLowerCase();
-      const outerHTML = match[0];
-      const textContent = match[2].replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim();
-      
-      children.push({
-        tagName,
-        outerHTML,
-        textContent
-      });
-    }
-
-    // Fallback if no structured tags found
-    if (children.length === 0 && html.trim() !== "") {
-      children.push({
-        tagName: "p",
-        outerHTML: html,
-        textContent: html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()
-      });
-    }
+    // Extract structure
+    // We'll treat H1/H2 as page breaks or section headers
+    // For simplicity, every H1/H2 starts a new "Page" in our system
+    // Normal paragraphs and tables go into the current page
     
     const pages: any[] = [];
     let currentPage: any = {
@@ -173,8 +150,11 @@ class DocParserService {
     const index: any[] = [];
     let pageCounter = 1;
     
+    const body = document.body;
+    const children = Array.from(body.children);
+    
     children.forEach((child, idx) => {
-      const tagName = child.tagName;
+      const tagName = child.tagName.toLowerCase();
       
       // Handle headings for index and page breaks
       if (tagName === 'h1' || tagName === 'h2') {
@@ -197,6 +177,7 @@ class DocParserService {
         
         // Add to index
         const anchorId = `heading-${idx}`;
+        child.id = anchorId;
         index.push({
           title: child.textContent || "Untitled",
           pageNumber: pageCounter,
@@ -206,12 +187,14 @@ class DocParserService {
       }
       
       // Append to current page content
+      // Mammoth produces clean HTML, but we might want to wrap tables in a responsive div
       if (tagName === 'table') {
-        let tableHtml = child.outerHTML;
-        if (!tableHtml.includes("class=")) {
-          tableHtml = tableHtml.replace("<table", '<table class="min-w-full border-collapse"');
-        }
-        currentPage.content += `<div class="table-responsive my-6 overflow-x-auto">${tableHtml}</div>`;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-responsive my-6 overflow-x-auto';
+        const clonedTable = child.cloneNode(true) as HTMLElement;
+        clonedTable.classList.add('min-w-full', 'border-collapse');
+        wrapper.appendChild(clonedTable);
+        currentPage.content += wrapper.outerHTML;
       } else {
         currentPage.content += child.outerHTML;
       }
@@ -256,8 +239,3 @@ class DocParserService {
     };
   }
 }
-
-
-module.exports = {
-  DocParserService
-};

@@ -1,6 +1,6 @@
-const { collection, getDocs, db, getDoc, doc } = require("../config/db");
+import { collection, getDocs, db, getDoc, doc } from "../config/firebase";
 
-class DocumentExplorer {
+export class DocumentExplorer {
   static async getNexusData() {
     const usersSnapshot = await getDocs(collection(db, "users"));
     const workspacesSnapshot = await getDocs(collection(db, "workspaces"));
@@ -121,8 +121,3 @@ class DocumentExplorer {
     };
   }
 }
-
-
-module.exports = {
-  DocumentExplorer
-};

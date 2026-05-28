@@ -1,8 +1,7 @@
-const { Router } = require("express");
-const { PublicController } = require("../controllers/publicController");
-const { authenticate, optionalAuthenticate } = require("../middleware/auth");
-
-const { checkDb } = require("../middleware/checkDb");
+import { Router } from "express";
+import { PublicController } from "../controllers/publicController";
+import { authenticate, optionalAuthenticate } from "../middleware/auth";
+import { checkDb } from "../middleware/checkDb";
 
 const router = Router();
 
@@ -35,4 +34,4 @@ router.get("/audit-logs", authenticate, checkDb, PublicController.getAuditLogs);
 // Delete Workflow (Permanently Purge) -> Strict Authenticate
 router.delete("/admin-delete/:id", authenticate, checkDb, PublicController.deletePublicContent);
 
-module.exports = router;
+export default router;

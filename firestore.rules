@@ -1,0 +1,145 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- 0. Startup Check ---
+    match /_startup_check_/{docId} {
+      allow read: if true;
+    }
+
+    // --- Global Helper Functions ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isEmailVerified() {
+      return isSignedIn() && (
+        request.auth.token.email_verified == true || 
+        request.auth.token.firebase.sign_in_provider == 'google.com'
+      );
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'admin@workspace.com'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function canAccessListing(listingId) {
+      return get(/databases/$(database)/documents/listings/$(listingId)).data.visibility == 'public' || 
+             (isSignedIn() && (
+               get(/databases/$(database)/documents/listings/$(listingId)).data.owner == request.auth.uid || 
+               get(/databases/$(database)/documents/listings/$(listingId)).data.owner == request.auth.token.email || 
+               isAdmin()
+             ));
+    }
+
+    // --- 1. Users Collection ---
+    match /users/{email} {
+      allow read: if isSignedIn() && (request.auth.token.email == email || isAdmin());
+      allow write: if isSignedIn() && (request.auth.token.email == email || isAdmin());
+    }
+
+    // --- 2. Contents (CMS Pages) ---
+    match /contents/{contentId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- 3. Workspaces ---
+    match /workspaces/{workspaceId} {
+      allow read: if isSignedIn() && (
+        resource.data.owner == request.auth.uid || 
+        resource.data.owner == request.auth.token.email || 
+        workspaceId.startsWith('main-') || 
+        isAdmin()
+      );
+      allow create: if isSignedIn() && request.resource.data.owner == request.auth.uid;
+      allow update, delete: if isSignedIn() && (
+        resource.data.owner == request.auth.uid || 
+        resource.data.owner == request.auth.token.email || 
+        isAdmin()
+      );
+    }
+
+    // --- 4. Listings / Documents ---
+    match /listings/{listingId} {
+      allow read: if resource.data.visibility == 'public' || (
+        isSignedIn() && (
+          resource.data.owner == request.auth.uid || 
+          resource.data.owner == request.auth.token.email || 
+          isAdmin()
+        )
+      );
+      allow create: if isSignedIn() && request.resource.data.owner == request.auth.uid;
+      allow update, delete: if isSignedIn() && (
+        resource.data.owner == request.auth.uid || 
+        resource.data.owner == request.auth.token.email || 
+        isAdmin()
+      );
+    }
+
+    // --- 5. Pages of Document Listings ---
+    match /pages/{pageId} {
+      allow read: if canAccessListing(resource.data.listingId);
+      allow create: if isSignedIn() && (
+        get(/databases/$(database)/documents/listings/$(request.resource.data.listingId)).data.owner == request.auth.uid || 
+        isAdmin()
+      );
+      allow update, delete: if isSignedIn() && (
+        get(/databases/$(database)/documents/listings/$(resource.data.listingId)).data.owner == request.auth.uid || 
+        isAdmin()
+      );
+    }
+
+    // --- 6. Highlights ---
+    match /highlights/{highlightId} {
+      allow read: if canAccessListing(resource.data.listingId);
+      allow create: if isSignedIn() && canAccessListing(request.resource.data.listingId);
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // --- 7. Annotations ---
+    match /annotations/{annotationId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // --- 8. Public Interaction Collections ---
+    match /follows/{followId} {
+      allow read, write: if isSignedIn();
+    }
+    match /favorites/{favId} {
+      allow read, write: if isSignedIn();
+    }
+    match /bookmarks/{bkId} {
+      allow read, write: if isSignedIn();
+    }
+    match /drafts/{draftId} {
+      allow read, write: if isSignedIn();
+    }
+    match /page_versions/{verId} {
+      allow read, write: if isSignedIn();
+    }
+    match /doc_indices/{indexId} {
+      allow read, write: if isSignedIn();
+    }
+    match /doc_pages/{pageId} {
+      allow read, write: if isSignedIn();
+    }
+    match /admin_audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn();
+    }
+  }
+}

@@ -1,6 +1,6 @@
-const { db, doc, getDoc, collection, getDocs, query, where } = require("../config/db");
+import { db, doc, getDoc, collection, getDocs, query, where } from "../config/firebase";
 
-class PublicAnalyticsService {
+export class PublicAnalyticsService {
   /**
    * Aggregates public content and calculates comprehensive admin metrics.
    */
@@ -166,8 +166,3 @@ class PublicAnalyticsService {
     };
   }
 }
-
-
-module.exports = {
-  PublicAnalyticsService
-};

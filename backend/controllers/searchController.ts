@@ -1,18 +1,15 @@
+import { Request, Response } from "express";
+import { db, collection, query, where, getDocs } from "../config/firebase";
+import { sendSuccess, sendError } from "../utils/response";
 
-const { db, collection, query, where, getDocs } = require("../config/db");
-
-type Request = import("express").Request;
-type Response = import("express").Response;
-const { sendSuccess, sendError } = require("../utils/response");
-
-const SearchController = {
+export const SearchController = {
   async search(req: Request, res: Response) {
     try {
       const { query: searchQuery, listingId } = req.query;
       if (!searchQuery) return sendError(res, "Search query is required", 400);
 
       const pagesRef = collection(db, "pages");
-      let q: any = pagesRef;
+      let q = pagesRef;
 
       if (listingId) {
         q = query(pagesRef, where("listingId", "==", listingId));
@@ -33,9 +30,4 @@ const SearchController = {
       sendError(res, error.message);
     }
   }
-};
-
-
-module.exports = {
-  SearchController
 };

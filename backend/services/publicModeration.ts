@@ -1,4 +1,16 @@
-const { db, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where, addDoc } = require("../config/db");
+import { 
+  db, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  collection, 
+  getDocs, 
+  query, 
+  where,
+  addDoc
+} from "../config/firebase";
 
 // Localized lists of spam and banned words for strict quality filtering
 const SPAM_KEYWORDS = [
@@ -11,7 +23,7 @@ const BANNED_WORDS = [
   "abuseword1", "fuck", "asshole", "bastard", "bitch", "profanity123", "nsfwcontent"
 ];
 
-class PublicModerationService {
+export class PublicModerationService {
 
   // -------------------------------------------------------------
   // PUBLIC REPORTING LOGIC
@@ -533,8 +545,3 @@ class PublicModerationService {
     });
   }
 }
-
-
-module.exports = {
-  PublicModerationService
-};

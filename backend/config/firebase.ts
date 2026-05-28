@@ -159,7 +159,17 @@ function writeCollection(colName: string, data: Record<string, any>) {
 import * as admin from "firebase-admin";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
 import { getApps, initializeApp } from "firebase-admin/app";
-import firebaseConfigJson from "../../firebase-applet-config.json";
+
+const firebaseConfigJson = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+  measurementId: "",
+  firestoreDatabaseId: ""
+};
 
 const firebaseConfig = {
   apiKey: firebaseConfigJson.apiKey,

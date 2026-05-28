@@ -3,7 +3,17 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import firebaseConfigJson from '../firebase-applet-config.json';
+
+const firebaseConfigJson = {
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: "",
+  measurementId: "",
+  firestoreDatabaseId: ""
+};
 
 // ==========================================
 // 1. Environment Detection & URL Utilities

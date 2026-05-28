@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { adminAuth, db, doc, getDoc, setDoc } from "../config/firebase";
+import { db, doc, getDoc } from "../config/db";
 import { ENV } from "../config/env";
 import { sendError } from "../utils/response";
 
@@ -53,18 +53,6 @@ export const optionalAuthenticate = async (req: AuthRequest, res: Response, next
         role: "admin",
         uid: "admin@workspace.com"
       };
-    }
-  } else if (token.length > 500) {
-    // Try Firebase Token SECOND
-    try {
-      const decodedToken = await adminAuth.verifyIdToken(token);
-      req.user = { 
-        email: decodedToken.email || "", 
-        role: "user",
-        uid: decodedToken.uid 
-      };
-    } catch (fbErr: any) {
-      req.user = null;
     }
   } else {
     // Custom JWT Verification
@@ -120,21 +108,6 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
         role: "admin",
         uid: "admin@workspace.com"
       };
-    }
-  } else if (token.length > 500) {
-    // Try Firebase Token SECOND
-    try {
-      const decodedToken = await adminAuth.verifyIdToken(token);
-      req.user = { 
-        email: decodedToken.email || "", 
-        role: "user",
-        uid: decodedToken.uid 
-      };
-    } catch (fbErr: any) {
-      if (fbErr.code === 'auth/id-token-expired') {
-        return sendError(res, "Token expired", 401, "EXPIRED");
-      }
-      return sendError(res, "Unauthorized: Invalid session", 401);
     }
   } else {
     // Custom JWT Verification

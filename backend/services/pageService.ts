@@ -10,7 +10,7 @@ import {
   where, 
   orderBy,
   db
-} from "../config/firebase";
+} from "../config/db";
 
 export class PageService {
   static async getByListing(listingId: string) {

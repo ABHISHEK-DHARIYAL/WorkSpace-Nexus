@@ -4,11 +4,11 @@ import cors from "cors";
 import morgan from "morgan";
 import routes from "./routes";
 import { ENV } from "./config/env";
-import { testFirestoreConnection } from "./config/firebase";
+import { testDatabaseConnection } from "./config/db";
 
 export async function createApp() {
-  // Test Firestore connection on startup to dynamically verify permission/quota and handle fallback
-  await testFirestoreConnection();
+  // Test database connection on startup
+  await testDatabaseConnection();
 
   const app = express();
 

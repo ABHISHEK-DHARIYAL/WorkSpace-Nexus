@@ -11,7 +11,7 @@ import {
   orderBy,
   serverTimestamp,
   db
-} from "../config/firebase";
+} from "../config/db";
 
 export class ListingService {
   static async getAllByUser(userId: string) {

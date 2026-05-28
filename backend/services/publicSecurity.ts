@@ -1,4 +1,4 @@
-import { db, doc, getDoc } from "../config/firebase";
+import { db, doc, getDoc } from "../config/db";
 
 export class PublicSecurityService {
   /**

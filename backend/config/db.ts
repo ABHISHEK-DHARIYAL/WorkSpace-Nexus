@@ -143,31 +143,13 @@ function writeCollection(colName: string, data: Record<string, any>) {
   }
 }
 
-export const isFirestoreWorking = false;
+export const isDatabaseWorking = true;
 
-export async function testFirestoreConnection() {
+export async function testDatabaseConnection() {
   console.log("[Database Service] Backend mode: local persistent JSON database operational.");
 }
 
-export const db = { type: "firestore-local-db" };
-
-export const adminAuth = {
-  verifyIdToken: async (token: string) => {
-    try {
-      const decoded = jwt.verify(token, ENV.JWT_SECRET) as any;
-      if (decoded) {
-        return {
-          uid: decoded.uid || decoded.sub || decoded.email || decoded.user_id || "mock-uid",
-          email: decoded.email || "",
-          email_verified: true,
-        };
-      }
-    } catch (err) {
-      console.warn("LocalDb adminAuth decode verification error:", err);
-    }
-    throw new Error("Invalid Token");
-  }
-};
+export const db = { type: "local-db" };
 
 export function collection(dbInstance: any, name: string) {
   return { type: "collection", path: name };
@@ -385,7 +367,7 @@ export async function getDocs(target: any) {
   };
 }
 
-console.log("[LocalDb] Custom local JSON database architecture engine loaded.");
+console.log("[Database Service] Custom local JSON database architecture engine loaded.");
 
 // Restore administrator accounts and other users to standard user roles on startup
 try {

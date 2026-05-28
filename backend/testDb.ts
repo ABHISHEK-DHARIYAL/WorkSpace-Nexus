@@ -1,9 +1,9 @@
-import { testFirestoreConnection } from "./config/firebase";
+import { testDatabaseConnection } from "./config/db";
 import { ListingService } from "./services/listingService";
 
 async function main() {
   console.log("Starting test-get-by-id diagnostic...");
-  await testFirestoreConnection();
+  await testDatabaseConnection();
   
   const id = "81jk4vr16mplr4rah";
   console.log(`Querying ListingService.getById("${id}"):`);

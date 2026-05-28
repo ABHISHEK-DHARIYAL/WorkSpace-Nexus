@@ -11,7 +11,7 @@ import {
   where, 
   orderBy,
   db
-} from "../config/firebase";
+} from "../config/db";
 
 export class WorkspaceService {
   static async getAllByUser(userId: string) {

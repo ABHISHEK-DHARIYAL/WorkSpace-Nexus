@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "../config/firebase";
+import { db } from "../config/db";
 import { sendError } from "../utils/response";
 
 export const checkDb = (req: Request, res: Response, next: NextFunction) => {

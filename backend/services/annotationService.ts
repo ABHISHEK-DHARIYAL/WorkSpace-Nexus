@@ -10,7 +10,7 @@ import {
   where, 
   orderBy,
   db
-} from "../config/firebase";
+} from "../config/db";
 
 export class AnnotationService {
   static async getByPage(pageId: string) {

@@ -7,7 +7,7 @@ import {
   query, 
   where,
   db
-} from "../config/firebase";
+} from "../config/db";
 
 export class HighlightService {
   static async getAll() {

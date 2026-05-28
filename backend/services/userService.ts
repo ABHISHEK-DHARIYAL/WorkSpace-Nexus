@@ -1,4 +1,4 @@
-import { collection, getDocs, db } from "../config/firebase";
+import { collection, getDocs, db } from "../config/db";
 
 export class UserService {
   static async getAll() {

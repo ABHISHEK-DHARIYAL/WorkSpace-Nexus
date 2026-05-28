@@ -15,14 +15,14 @@ import exportRoutes from "./exportRoutes";
 import workspaceHubExportRoutes from "./workspaceHubExportRoutes";
 import documentNexusExportRoutes from "./documentNexusExportRoutes";
 import { sendSuccess } from "../utils/response";
-import { isFirestoreWorking } from "../config/firebase";
+import { isDatabaseWorking } from "../config/db";
 
 const router = Router();
 
 router.get("/health", (req, res) => {
   sendSuccess(res, { 
     status: "ok", 
-    isFirestoreWorking,
+    isDatabaseWorking,
     timestamp: new Date().toISOString() 
   });
 });

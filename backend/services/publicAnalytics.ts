@@ -1,4 +1,4 @@
-import { db, doc, getDoc, collection, getDocs, query, where } from "../config/firebase";
+import { db, doc, getDoc, collection, getDocs, query, where } from "../config/db";
 
 export class PublicAnalyticsService {
   /**

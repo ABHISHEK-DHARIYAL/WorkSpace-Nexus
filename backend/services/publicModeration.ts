@@ -10,7 +10,7 @@ import {
   query, 
   where,
   addDoc
-} from "../config/firebase";
+} from "../config/db";
 
 // Localized lists of spam and banned words for strict quality filtering
 const SPAM_KEYWORDS = [

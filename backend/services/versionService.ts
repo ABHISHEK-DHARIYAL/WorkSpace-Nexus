@@ -9,7 +9,7 @@ import {
   orderBy,
   limit,
   db
-} from "../config/firebase";
+} from "../config/db";
 
 export class VersionService {
   static async createSnapshot(pageId: string, content: string, title: string) {

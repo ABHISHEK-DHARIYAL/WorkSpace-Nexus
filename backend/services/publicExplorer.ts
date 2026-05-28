@@ -1,4 +1,4 @@
-import { collection, getDocs, db, query, where, doc, updateDoc, deleteDoc, addDoc, getDoc, orderBy } from "../config/firebase";
+import { collection, getDocs, db, query, where, doc, updateDoc, deleteDoc, addDoc, getDoc, orderBy } from "../config/db";
 
 export interface AuditLog {
   id?: string;

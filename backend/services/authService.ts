@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { doc, getDoc, setDoc, deleteDoc, db, collection, query, where, getDocs } from "../config/firebase";
+import { doc, getDoc, setDoc, deleteDoc, db, collection, query, where, getDocs } from "../config/db";
 import { ENV } from "../config/env";
 
 const isAdminEmail = (email: string): boolean => {

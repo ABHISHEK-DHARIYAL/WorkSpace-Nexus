@@ -9,7 +9,7 @@ import {
   deleteDoc,
   orderBy,
   db
-} from "../config/firebase";
+} from "../config/db";
 
 export class ContentService {
   static async getAll() {

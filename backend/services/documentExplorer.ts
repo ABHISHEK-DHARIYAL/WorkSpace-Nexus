@@ -1,4 +1,4 @@
-import { collection, getDocs, db, getDoc, doc } from "../config/firebase";
+import { collection, getDocs, db, getDoc, doc } from "../config/db";
 
 export class DocumentExplorer {
   static async getNexusData() {

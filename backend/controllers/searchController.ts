@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { db, collection, query, where, getDocs } from "../config/firebase";
+import { db, collection, query, where, getDocs } from "../config/db";
 import { sendSuccess, sendError } from "../utils/response";
 
 export const SearchController = {

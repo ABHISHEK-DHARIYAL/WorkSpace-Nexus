@@ -1,4 +1,4 @@
-const express = require("express");
+import express from "express";
 import path from "path";
 import cors from "cors";
 import morgan from "morgan";
@@ -23,16 +23,12 @@ app.use("/api", routes);
 // Catch-all for API routes before static serving to prevent API route requests from falling through to client index.html serving
 app.use("/api/*", (req: express.Request, res: express.Response) => {
   res.status(404).json({
-    message: `API route not found: ${req.method} ${req.baseUrl || req.url}`,
+    message: `API route not found: ${req.method} ${req.baseUrl || req.url}`
   });
 });
 
 // Vite / Static Serving (Serverless / Production vs Dev)
-if (
-  ENV.NODE_ENV !== "production" &&
-  !process.env.VERCEL &&
-  !process.env.NOW_BUILDER
-) {
+if (ENV.NODE_ENV !== "production" && !process.env.VERCEL && !process.env.NOW_BUILDER) {
   console.log("Setting up Vite middleware...");
   // Dynamically load and register Vite middleware in background to avoid blocking module load
   import("vite")
@@ -60,19 +56,14 @@ if (
 }
 
 // Global error handler
-app.use(
-  (
-    err: any,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    console.error("Unhandled Error:", err);
-    res.status(err.status || 500).json({
-      message: err.message || "An unexpected error occurred",
-      error: ENV.NODE_ENV === "development" ? err : {},
-    });
-  }
-);
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Unhandled Error:", err);
+  res.status(err.status || 500).json({
+    message: err.message || "An unexpected error occurred",
+    error: ENV.NODE_ENV === "development" ? err : {}
+  });
+});
 
-module.exports = app;
+export default app;
+
+

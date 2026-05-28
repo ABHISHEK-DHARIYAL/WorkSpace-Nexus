@@ -97,7 +97,7 @@ export const validateAndResolveFirebaseConfig = (): FirebaseValidationResult => 
 
 const validation = validateAndResolveFirebaseConfig();
 const firebaseConfig = validation.resolvedConfig;
-const isConfigured = validation.isValid;
+const isConfigured = false; // Intentionally disabled as requested to remove Firebase the cloud one
 
 // ==========================================
 // 3. Stable Initialization

@@ -17,6 +17,26 @@ try {
   console.warn(`[Database Service] Could not initialize DATA_DIR at ${DATA_DIR}, continuing dynamically with fully in-memory fallback state:`, err);
 }
 
+// In Vercel serverless environment, copy seed files from repository's .data folder to /tmp/.data on startup so it has original pre-saved data.
+if (isVercelEnv) {
+  try {
+    const srcDir = path.join(process.cwd(), ".data");
+    if (fs.existsSync(srcDir)) {
+      const files = fs.readdirSync(srcDir);
+      for (const file of files) {
+        const srcPath = path.join(srcDir, file);
+        const destPath = path.join(DATA_DIR, file);
+        if (fs.statSync(srcPath).isFile() && !fs.existsSync(destPath)) {
+          fs.copyFileSync(srcPath, destPath);
+          console.log(`[Database Service] Copied repository seed file to serverless /tmp: ${file}`);
+        }
+      }
+    }
+  } catch (copyErr: any) {
+    console.error("[Database Service] Error copying repository seed data to /tmp/.data:", copyErr.message);
+  }
+}
+
 // In-memory collection fallback for environments where local file system writes fail or are restricted
 const memoryCache: Record<string, Record<string, any>> = {};
 
@@ -32,12 +52,7 @@ function readCollection(colName: string): Record<string, any> {
 
   const readAndParse = (p: string) => {
     const data = fs.readFileSync(p, "utf8");
-    const parsed = JSON.parse(data || "{}");
-    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      console.warn(`[Database Service] LocalDb: Collection "${colName}" had invalid root shape. Resetting to an empty object.`);
-      return {};
-    }
-    return parsed;
+    return JSON.parse(data || "{}");
   };
 
   try {
@@ -106,7 +121,12 @@ function writeCollection(colName: string, data: Record<string, any>) {
     }
 
     // 3. Atomically rename the temp file to the main database file
-    fs.renameSync(tmpPath, filePath);
+    try {
+      fs.renameSync(tmpPath, filePath);
+    } catch (renameErr) {
+      // If rename fails (e.g. EXDEV cross-device link error on container filesystems), fallback to direct write
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    }
   } catch (err) {
     console.error(`[Database Service] LocalDb Error writing collection ${colName} to disk:`, err);
     
@@ -151,11 +171,16 @@ const firebaseConfig = {
   measurementId: firebaseConfigJson.measurementId,
 };
 
-const isConfigured = !!firebaseConfig.apiKey && firebaseConfig.apiKey !== "remixed-api-key";
+const isConfigured = false; // Disable cloud Firebase connection as requested to use the local persistent database fallbacks directly
+
+// Admin SDK needs a private key/Service Account under serverless Vercel, otherwise it hangs the gRPC thread.
+// So on Vercel, only initialize Admin SDK if a service account private key is detected,
+// otherwise default to local database fallback instantly.
+const shouldInitAdminSdk = isConfigured && (!isVercelEnv || !!process.env.GOOGLE_APPLICATION_CREDENTIALS || !!process.env.FIREBASE_SERVICE_ACCOUNT);
 
 let adminApp: any = null;
 let adminFirestoreInstance: any = null;
-if (isConfigured) {
+if (shouldInitAdminSdk) {
   try {
     const apps = getApps();
     if (apps.length > 0) {
@@ -181,38 +206,65 @@ export async function testFirestoreConnection() {
     return;
   }
   try {
-    // A quick, lightweight read on a non-existent database key to test credentials and access permissions
-    await adminFirestoreInstance.collection("_startup_check_").limit(1).get();
-    console.log("[Database Service] Firestore connection test: SUCCESS. Live cloud database is fully accessible!");
-    isFirestoreWorking = true;
-
-    // Automatically migrate local JSON backup data to live Cloud Firestore if documents are missing
-      const collectionsToSeed = ["users", "workspaces", "listings", "pages", "doc_pages", "bookmarks", "favorites"];
-      for (const colName of collectionsToSeed) {
-        try {
-          const colRef = adminFirestoreInstance.collection(colName);
-          const localData = readCollection(colName);
-          let syncCount = 0;
-          for (const [id, value] of Object.entries(localData)) {
-            if (id === "undefined") continue; // Clear out raw trash data
-            const docRef = colRef.doc(id);
-            const docSnap = await docRef.get();
-            if (!docSnap.exists) {
-              await docRef.set(resolveServerTimestamp(value));
-              syncCount++;
-            }
-          }
-          if (syncCount > 0) {
-            console.log(`[Database Service] Live Firestore: Synchronized ${syncCount} missing documents for collection "${colName}".`);
-          }
-        } catch (colErr: any) {
-          console.error(`[Database Service] Live Firestore: Failed to sync data for collection "${colName}":`, colErr.message);
-        }
+    // A quick, lightweight read on a non-existent database key to test credentials and access permissions.
+    // Wrap with a strict 2-second timeout to prevent serverless execution hanging on unconfigured Firestore connections.
+    // To absolutely prevent unhandled promise rejections if the check times out but eventually fails/rejects in the background,
+    // we convert BOTH the Firestore check and the timeout check into non-rejecting promises that resolve with a status object.
+    const promiseGet = adminFirestoreInstance.collection("_startup_check_").limit(1).get();
+    const safePromiseGet = promiseGet.then(
+      (val) => ({ status: "success" as const, val }),
+      (err: any) => {
+        console.log("[Database Service] Background Firestore promise settled/rejected (preventing unhandled crash):", err.message);
+        return { status: "error" as const, err };
       }
+    );
+    const promiseTimeout = new Promise<{ status: "timeout"; err: Error }>((resolve) => 
+      setTimeout(() => resolve({ status: "timeout" as const, err: new Error("Firestore connection check timed out") }), 2000)
+    );
+    const result = await Promise.race([safePromiseGet, promiseTimeout]);
+
+    if (result.status === "success") {
+      console.log("[Database Service] Firestore connection test: SUCCESS. Live cloud database is fully accessible!");
+      isFirestoreWorking = true;
+
+      // Automatically migrate local JSON backup data to live Cloud Firestore in the background
+      runBackgroundMigration().catch(migrateErr => {
+        console.error("[Database Service] Live Firestore background migration error:", migrateErr);
+      });
+    } else {
+      console.log(`[Database Service] Firestore connection test resolved without success (${result.status}):`, result.err?.message || "No error details available");
+      console.log("[Database Service] Backend mode: local persistent JSON database (Active & Fully Operational).");
+      isFirestoreWorking = false;
+    }
   } catch (err: any) {
     // Standardize backend storage mode gracefully as a secure, high-performance local persistence store
     console.log("[Database Service] Backend mode: local persistent JSON database (Active & Fully Operational).");
     isFirestoreWorking = false;
+  }
+}
+
+async function runBackgroundMigration() {
+  const collectionsToSeed = ["users", "workspaces", "listings", "pages", "doc_pages", "bookmarks", "favorites"];
+  for (const colName of collectionsToSeed) {
+    try {
+      const colRef = adminFirestoreInstance.collection(colName);
+      const localData = readCollection(colName);
+      let syncCount = 0;
+      for (const [id, value] of Object.entries(localData)) {
+        if (id === "undefined") continue; // Clear out raw trash data
+        const docRef = colRef.doc(id);
+        const docSnap = await docRef.get();
+        if (!docSnap.exists) {
+          await docRef.set(resolveServerTimestamp(value));
+          syncCount++;
+        }
+      }
+      if (syncCount > 0) {
+        console.log(`[Database Service] Live Firestore: Synchronized ${syncCount} missing documents for collection "${colName}".`);
+      }
+    } catch (colErr: any) {
+      console.error(`[Database Service] Live Firestore: Failed to sync data for collection "${colName}":`, colErr.message);
+    }
   }
 }
 
@@ -371,13 +423,30 @@ export async function addDoc(colRef: any, data: any) {
 }
 
 export async function deleteDoc(docRef: any) {
-  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
-    return docRef.delete();
+  let colName = "";
+  let docId = "";
+
+  if (docRef) {
+    if (docRef.type === "doc") {
+      colName = docRef.col;
+      docId = docRef.id;
+    } else {
+      colName = docRef.parent ? docRef.parent.id : "";
+      docId = docRef.id;
+    }
   }
-  const colData = readCollection(docRef.col);
-  if (colData[docRef.id] !== undefined) {
-    delete colData[docRef.id];
-    writeCollection(docRef.col, colData);
+
+  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
+    await docRef.delete();
+  }
+
+  if (colName && docId) {
+    const colData = readCollection(colName);
+    if (colData[docId] !== undefined) {
+      delete colData[docId];
+      writeCollection(colName, colData);
+      console.log(`[Database Service] Cascaded fallback deletion clean for collection: ${colName}, id: ${docId}`);
+    }
   }
 }
 
@@ -457,7 +526,7 @@ export async function getDocs(target: any) {
   }
   let items = Object.entries(readCollection(colName)).map(([id, val]: [string, any]) => ({
     id,
-    ...(val && typeof val === "object" ? val : {}),
+    ...val,
   }));
 
   if (target.type === "query" && target.constraints) {
@@ -523,7 +592,7 @@ export async function getDocs(target: any) {
     return {
       id,
       ref: { type: "doc", col: colName, id },
-      data: () => ({ ...(data && typeof data === "object" ? data : {}), id }),
+      data: () => ({ ...data, id }),
     };
   });
 
@@ -540,6 +609,39 @@ console.log("Firebase / fallback local persistent DB loaded.");
 try {
   const users = readCollection("users");
   let updatedUsers = false;
+
+  // Dynamically seed admin@workspace.com as the default primary Admin
+  if (!users["admin@workspace.com"]) {
+    users["admin@workspace.com"] = {
+      email: "admin@workspace.com",
+      role: "admin",
+      isSocial: true,
+      password: bcrypt.hashSync("password123", 10),
+      createdAt: new Date().toISOString()
+    };
+    updatedUsers = true;
+    console.log("[Database Service] Seeded default system administrator: admin@workspace.com");
+  } else if (!users["admin@workspace.com"].password) {
+    users["admin@workspace.com"].password = bcrypt.hashSync("password123", 10);
+    updatedUsers = true;
+  }
+
+  // Seed jane.doe@example.com so standard sandbox option remains accessible
+  if (!users["jane.doe@example.com"]) {
+    users["jane.doe@example.com"] = {
+      email: "jane.doe@example.com",
+      role: "user",
+      isSocial: true,
+      password: bcrypt.hashSync("password123", 10),
+      createdAt: new Date().toISOString()
+    };
+    updatedUsers = true;
+    console.log("[Database Service] Seeded default standard sandbox user: jane.doe@example.com");
+  } else if (!users["jane.doe@example.com"].password) {
+    users["jane.doe@example.com"].password = bcrypt.hashSync("password123", 10);
+    updatedUsers = true;
+  }
+
   const nonAdminEmails = ["heroofthevil311@gmail.com", "hshit7534@gmail.com", "rajveer@gmail.com"];
   for (const email of nonAdminEmails) {
     if (users[email] && users[email].role === "admin") {
@@ -554,3 +656,4 @@ try {
 } catch (seedErr) {
   console.error("Failed to sync user roles restore:", seedErr);
 }
+

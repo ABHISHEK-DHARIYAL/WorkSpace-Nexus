@@ -2,12 +2,11 @@
   "name": "react-example",
   "private": true,
   "version": "0.0.0",
-  "type": "commonjs",
   "scripts": {
     "dev": "tsx backend/server.ts",
-    "build": "vite build && esbuild backend/app.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/api.cjs && esbuild backend/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
+    "build": "vite build && esbuild backend/app.ts --bundle --platform=node --format=cjs --sourcemap --outfile=backend/app.js && esbuild backend/server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
     "start": "node dist/server.cjs",
-    "clean": "rm -rf dist",
+    "clean": "rm -rf dist backend/app.js backend/app.js.map dist/server.cjs dist/server.cjs.map",
     "lint": "tsc --noEmit"
   },
   "engines": {

@@ -1,2 +1,2 @@
-const app = require("../backend/app");
-module.exports = app;
+const app = require("../dist/api.js");
+module.exports = app.default || app;

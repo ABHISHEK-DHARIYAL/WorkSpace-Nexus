@@ -32,7 +32,12 @@ function readCollection(colName: string): Record<string, any> {
 
   const readAndParse = (p: string) => {
     const data = fs.readFileSync(p, "utf8");
-    return JSON.parse(data || "{}");
+    const parsed = JSON.parse(data || "{}");
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      console.warn(`[Database Service] LocalDb: Collection "${colName}" had invalid root shape. Resetting to an empty object.`);
+      return {};
+    }
+    return parsed;
   };
 
   try {
@@ -452,7 +457,7 @@ export async function getDocs(target: any) {
   }
   let items = Object.entries(readCollection(colName)).map(([id, val]: [string, any]) => ({
     id,
-    ...val,
+    ...(val && typeof val === "object" ? val : {}),
   }));
 
   if (target.type === "query" && target.constraints) {
@@ -518,7 +523,7 @@ export async function getDocs(target: any) {
     return {
       id,
       ref: { type: "doc", col: colName, id },
-      data: () => ({ ...data, id }),
+      data: () => ({ ...(data && typeof data === "object" ? data : {}), id }),
     };
   });
 
@@ -549,4 +554,3 @@ try {
 } catch (seedErr) {
   console.error("Failed to sync user roles restore:", seedErr);
 }
-

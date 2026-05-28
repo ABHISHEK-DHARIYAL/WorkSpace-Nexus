@@ -1,5 +1,5 @@
 {
-  "name": "Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: DocCMS - Role Based Content System",
+  "name": "DocCMS - Role Based Content System",
   "description": "A full-stack document-like CMS with admin and user roles, featuring custom JWT authentication and dynamic content pages.",
   "requestFramePermissions": [],
   "majorCapabilities": [

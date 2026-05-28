@@ -4,8 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { ENV } from "./env";
 
-// Local persistent directory for JSON-based mock Firestore
-// Use /tmp/.data if deployed to Vercel (where root filesystem is read-only)
+// Local persistent directory for JSON-based database
 const isVercelEnv = !!process.env.VERCEL || !!process.env.NOW_BUILDER;
 const DATA_DIR = isVercelEnv ? path.join("/tmp", ".data") : path.join(process.cwd(), ".data");
 
@@ -42,7 +41,6 @@ const memoryCache: Record<string, Record<string, any>> = {};
 
 // Thread-safe / Sync-safe helper to read collection JSON with recovery fallback
 function readCollection(colName: string): Record<string, any> {
-  // Always prefer loaded memory caching for instantaneous performance or fallback integrity
   if (memoryCache[colName]) {
     return memoryCache[colName];
   }
@@ -56,7 +54,6 @@ function readCollection(colName: string): Record<string, any> {
   };
 
   try {
-    // If main file is missing but backup exists, restore it automatically
     if (!fs.existsSync(filePath)) {
       if (fs.existsSync(backupPath)) {
         console.warn(`[Database Service] LocalDb: File ${filePath} went missing! Instantly recovering from stable backup file.`);
@@ -80,7 +77,6 @@ function readCollection(colName: string): Record<string, any> {
       if (fs.existsSync(backupPath)) {
         try {
           const recoveredValue = readAndParse(backupPath);
-          // Copy backup over to fix main file
           fs.copyFileSync(backupPath, filePath);
           console.log(`[Database Service] LocalDb: Recovered collection "${colName}" from backup successfully.`);
           memoryCache[colName] = recoveredValue;
@@ -100,7 +96,6 @@ function readCollection(colName: string): Record<string, any> {
 
 // Thread-safe / Sync-safe helper to write collection JSON atomically with rollbacks
 function writeCollection(colName: string, data: Record<string, any>) {
-  // Always update in-memory cache to guarantee immediately visible changes
   memoryCache[colName] = data;
 
   const filePath = path.join(DATA_DIR, `${colName}.json`);
@@ -108,10 +103,8 @@ function writeCollection(colName: string, data: Record<string, any>) {
   const backupPath = path.join(DATA_DIR, `${colName}.json.bak`);
 
   try {
-    // 1. Write fresh data to a temporary file
     fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf8");
     
-    // 2. Make a stable backup of the current valid file before overwrite (rollback-safety)
     if (fs.existsSync(filePath)) {
       try {
         fs.copyFileSync(filePath, backupPath);
@@ -120,17 +113,13 @@ function writeCollection(colName: string, data: Record<string, any>) {
       }
     }
 
-    // 3. Atomically rename the temp file to the main database file
     try {
       fs.renameSync(tmpPath, filePath);
     } catch (renameErr) {
-      // If rename fails (e.g. EXDEV cross-device link error on container filesystems), fallback to direct write
       fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
     }
   } catch (err) {
     console.error(`[Database Service] LocalDb Error writing collection ${colName} to disk:`, err);
-    
-    // Rollback recovery: if write failed/interrupted, restore the main file from stable backup
     try {
       if (fs.existsSync(backupPath) && !fs.existsSync(filePath)) {
         try {
@@ -144,7 +133,6 @@ function writeCollection(colName: string, data: Record<string, any>) {
       // Ignore nested fs check error
     }
   } finally {
-    // Cleanup temporary file if it was left behind
     try {
       if (fs.existsSync(tmpPath)) {
         fs.unlinkSync(tmpPath);
@@ -155,210 +143,37 @@ function writeCollection(colName: string, data: Record<string, any>) {
   }
 }
 
-// Core Firebase imports
-import * as admin from "firebase-admin";
-import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
-import { getApps, initializeApp } from "firebase-admin/app";
-
-const firebaseConfigJson = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: "",
-  measurementId: "",
-  firestoreDatabaseId: ""
-};
-
-const firebaseConfig = {
-  apiKey: firebaseConfigJson.apiKey,
-  authDomain: firebaseConfigJson.authDomain,
-  projectId: firebaseConfigJson.projectId,
-  storageBucket: firebaseConfigJson.storageBucket,
-  messagingSenderId: firebaseConfigJson.messagingSenderId,
-  appId: firebaseConfigJson.appId,
-  measurementId: firebaseConfigJson.measurementId,
-};
-
-const isConfigured = false; // Disable cloud Firebase connection as requested to use the local persistent database fallbacks directly
-
-// Admin SDK needs a private key/Service Account under serverless Vercel, otherwise it hangs the gRPC thread.
-// So on Vercel, only initialize Admin SDK if a service account private key is detected,
-// otherwise default to local database fallback instantly.
-const shouldInitAdminSdk = isConfigured && (!isVercelEnv || !!process.env.GOOGLE_APPLICATION_CREDENTIALS || !!process.env.FIREBASE_SERVICE_ACCOUNT);
-
-let adminApp: any = null;
-let adminFirestoreInstance: any = null;
-if (shouldInitAdminSdk) {
-  try {
-    const apps = getApps();
-    if (apps.length > 0) {
-      adminApp = apps[0]!;
-    } else {
-      adminApp = initializeApp({
-        projectId: firebaseConfigJson.projectId,
-      });
-    }
-    adminFirestoreInstance = getAdminFirestore(adminApp, firebaseConfigJson.firestoreDatabaseId);
-    console.log("Firebase Admin SDK initialized successfully.");
-  } catch (err) {
-    console.error("Firebase Admin SDK init error:", err);
-  }
-}
-
-export let isFirestoreWorking = false;
+export const isFirestoreWorking = false;
 
 export async function testFirestoreConnection() {
-  if (!isConfigured || !adminFirestoreInstance) {
-    isFirestoreWorking = false;
-    console.log("[Database Service] Backend mode: local persistent JSON database (Active & Fully Operational).");
-    return;
-  }
-  try {
-    // A quick, lightweight read on a non-existent database key to test credentials and access permissions.
-    // Wrap with a strict 2-second timeout to prevent serverless execution hanging on unconfigured Firestore connections.
-    // To absolutely prevent unhandled promise rejections if the check times out but eventually fails/rejects in the background,
-    // we convert BOTH the Firestore check and the timeout check into non-rejecting promises that resolve with a status object.
-    const promiseGet = adminFirestoreInstance.collection("_startup_check_").limit(1).get();
-    const safePromiseGet = promiseGet.then(
-      (val) => ({ status: "success" as const, val }),
-      (err: any) => {
-        console.log("[Database Service] Background Firestore promise settled/rejected (preventing unhandled crash):", err.message);
-        return { status: "error" as const, err };
-      }
-    );
-    const promiseTimeout = new Promise<{ status: "timeout"; err: Error }>((resolve) => 
-      setTimeout(() => resolve({ status: "timeout" as const, err: new Error("Firestore connection check timed out") }), 2000)
-    );
-    const result = await Promise.race([safePromiseGet, promiseTimeout]);
-
-    if (result.status === "success") {
-      console.log("[Database Service] Firestore connection test: SUCCESS. Live cloud database is fully accessible!");
-      isFirestoreWorking = true;
-
-      // Automatically migrate local JSON backup data to live Cloud Firestore in the background
-      runBackgroundMigration().catch(migrateErr => {
-        console.error("[Database Service] Live Firestore background migration error:", migrateErr);
-      });
-    } else {
-      console.log(`[Database Service] Firestore connection test resolved without success (${result.status}):`, result.err?.message || "No error details available");
-      console.log("[Database Service] Backend mode: local persistent JSON database (Active & Fully Operational).");
-      isFirestoreWorking = false;
-    }
-  } catch (err: any) {
-    // Standardize backend storage mode gracefully as a secure, high-performance local persistence store
-    console.log("[Database Service] Backend mode: local persistent JSON database (Active & Fully Operational).");
-    isFirestoreWorking = false;
-  }
+  console.log("[Database Service] Backend mode: local persistent JSON database operational.");
 }
 
-async function runBackgroundMigration() {
-  const collectionsToSeed = ["users", "workspaces", "listings", "pages", "doc_pages", "bookmarks", "favorites"];
-  for (const colName of collectionsToSeed) {
-    try {
-      const colRef = adminFirestoreInstance.collection(colName);
-      const localData = readCollection(colName);
-      let syncCount = 0;
-      for (const [id, value] of Object.entries(localData)) {
-        if (id === "undefined") continue; // Clear out raw trash data
-        const docRef = colRef.doc(id);
-        const docSnap = await docRef.get();
-        if (!docSnap.exists) {
-          await docRef.set(resolveServerTimestamp(value));
-          syncCount++;
-        }
-      }
-      if (syncCount > 0) {
-        console.log(`[Database Service] Live Firestore: Synchronized ${syncCount} missing documents for collection "${colName}".`);
-      }
-    } catch (colErr: any) {
-      console.error(`[Database Service] Live Firestore: Failed to sync data for collection "${colName}":`, colErr.message);
-    }
-  }
-}
+export const db = { type: "firestore-local-db" };
 
-export const db = adminFirestoreInstance || { type: "firestore-local-db" };
-
-// Helper to wrap Firestore Admin snapshot to look like client API for exists()
-function wrapAdminSnapshot(snap: any) {
-  if (!snap) return snap;
-  return {
-    id: snap.id,
-    path: snap.ref?.path || "",
-    ref: snap.ref,
-    exists: () => snap.exists === true,
-    data: () => (snap.exists ? { ...snap.data(), id: snap.id } : null),
-  };
-}
-
-// Helper to wrap QuerySnapshot to have list of wrapped docs
-function wrapAdminQuerySnapshot(querySnap: any) {
-  if (!querySnap) return querySnap;
-  const docs = (querySnap.docs || []).map((snap: any) => wrapAdminSnapshot(snap));
-  return {
-    docs,
-    empty: querySnap.empty,
-    size: querySnap.size !== undefined ? querySnap.size : docs.length
-  };
-}
-
-// Mock/Real Auth Token verifier
 export const adminAuth = {
   verifyIdToken: async (token: string) => {
-    if (isConfigured) {
-      try {
-        const decoded = await admin.auth().verifyIdToken(token);
+    try {
+      const decoded = jwt.verify(token, ENV.JWT_SECRET) as any;
+      if (decoded) {
         return {
-          uid: decoded.uid,
+          uid: decoded.uid || decoded.sub || decoded.email || decoded.user_id || "mock-uid",
           email: decoded.email || "",
-          email_verified: decoded.email_verified || false,
+          email_verified: true,
         };
-      } catch (err: any) {
-        console.error("Firebase adminAuth verification failed:", err);
-        throw err;
       }
-    } else {
-      try {
-        const decoded = jwt.decode(token) as any;
-        if (decoded) {
-          return {
-            uid: decoded.uid || decoded.sub || decoded.email || decoded.user_id || "mock-uid",
-            email: decoded.email || "",
-            email_verified: true,
-          };
-        }
-      } catch (err) {
-        console.warn("LocalDb adminAuth decode warning:", err);
-      }
-      throw new Error("Invalid Token");
+    } catch (err) {
+      console.warn("LocalDb adminAuth decode verification error:", err);
     }
+    throw new Error("Invalid Token");
   }
 };
 
-// Routing helper functions depending on config status
 export function collection(dbInstance: any, name: string) {
-  if (isConfigured && isFirestoreWorking && dbInstance && dbInstance.type !== "firestore-local-db") {
-    return dbInstance.collection(name);
-  }
   return { type: "collection", path: name };
 }
 
 export function doc(...args: any[]) {
-  if (isConfigured && isFirestoreWorking && db && (db as any).type !== "firestore-local-db") {
-    const dbInstance = db as any;
-    if (args.length === 3) {
-      return dbInstance.collection(args[1]).doc(args[2]);
-    }
-    if (args.length === 2 && args[0]) {
-      if (typeof args[0].doc === "function") {
-        return args[0].doc(args[1]);
-      } else {
-        return dbInstance.doc(args[1]);
-      }
-    }
-    return dbInstance.doc("");
-  }
   if (args.length === 3) {
     return { type: "doc", col: args[1], id: args[2] };
   }
@@ -373,10 +188,6 @@ export function doc(...args: any[]) {
 }
 
 export async function getDoc(docRef: any) {
-  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
-    const snap = await docRef.get();
-    return wrapAdminSnapshot(snap);
-  }
   const colName = docRef.col;
   const data = readCollection(colName);
   const item = data[docRef.id];
@@ -389,10 +200,6 @@ export async function getDoc(docRef: any) {
 }
 
 export async function setDoc(docRef: any, data: any, options?: any) {
-  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
-    const parsedData = resolveServerTimestamp(data);
-    return docRef.set(parsedData, options || {});
-  }
   const colName = docRef.col;
   const colData = readCollection(colName);
   const parsedData = resolveServerTimestamp(data);
@@ -406,10 +213,6 @@ export async function setDoc(docRef: any, data: any, options?: any) {
 }
 
 export async function updateDoc(docRef: any, data: any) {
-  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
-    const parsedData = resolveServerTimestamp(data);
-    return docRef.update(parsedData);
-  }
   const colName = docRef.col;
   const colData = readCollection(colName);
   const parsedData = resolveServerTimestamp(data);
@@ -418,11 +221,6 @@ export async function updateDoc(docRef: any, data: any) {
 }
 
 export async function addDoc(colRef: any, data: any) {
-  if (isConfigured && isFirestoreWorking && colRef && colRef.type !== "collection") {
-    const parsedData = resolveServerTimestamp(data);
-    const addedRef = await colRef.add(parsedData);
-    return addedRef;
-  }
   const id = Math.random().toString(36).substring(2, 11) + Date.now().toString(36);
   const parsedData = resolveServerTimestamp(data);
   const colName = colRef.path;
@@ -446,10 +244,6 @@ export async function deleteDoc(docRef: any) {
     }
   }
 
-  if (isConfigured && isFirestoreWorking && docRef && docRef.type !== "doc") {
-    await docRef.delete();
-  }
-
   if (colName && docId) {
     const colData = readCollection(colName);
     if (colData[docId] !== undefined) {
@@ -461,20 +255,6 @@ export async function deleteDoc(docRef: any) {
 }
 
 export function query(targetRef: any, ...constraints: any[]) {
-  if (isConfigured && isFirestoreWorking && targetRef && targetRef.type !== "collection" && targetRef.type !== "doc" && targetRef.type !== "query") {
-    let adminQuery = targetRef;
-    for (const c of constraints) {
-      if (!c) continue;
-      if (c.type === "where") {
-        adminQuery = adminQuery.where(c.field, c.op, c.value);
-      } else if (c.type === "orderBy") {
-        adminQuery = adminQuery.orderBy(c.field, c.direction);
-      } else if (c.type === "limit") {
-        adminQuery = adminQuery.limit(c.count);
-      }
-    }
-    return adminQuery;
-  }
   return {
     type: "query",
     col: targetRef.type === "collection" ? targetRef.path : targetRef.col,
@@ -495,13 +275,9 @@ export function limit(count: number) {
 }
 
 export function serverTimestamp() {
-  if (isConfigured && isFirestoreWorking) {
-    return admin.firestore.FieldValue.serverTimestamp();
-  }
   return { type: "serverTimestamp" };
 }
 
-// Utility to recursively find and resolve Server Timestamp objects with actual ISO string
 function resolveServerTimestamp(data: any): any {
   if (data === null || data === undefined) {
     return data;
@@ -526,10 +302,6 @@ function resolveServerTimestamp(data: any): any {
 }
 
 export async function getDocs(target: any) {
-  if (isConfigured && isFirestoreWorking && target && target.type !== "collection" && target.type !== "query") {
-    const snap = await target.get();
-    return wrapAdminQuerySnapshot(snap);
-  }
   const colName = target.col || (target.type === "collection" ? target.path : "");
   if (!colName) {
     return { docs: [], empty: true, size: 0 };
@@ -613,14 +385,13 @@ export async function getDocs(target: any) {
   };
 }
 
-console.log("Firebase / fallback local persistent DB loaded.");
+console.log("[LocalDb] Custom local JSON database architecture engine loaded.");
 
 // Restore administrator accounts and other users to standard user roles on startup
 try {
   const users = readCollection("users");
   let updatedUsers = false;
 
-  // Dynamically seed admin@workspace.com as the default primary Admin
   if (!users["admin@workspace.com"]) {
     users["admin@workspace.com"] = {
       email: "admin@workspace.com",
@@ -636,7 +407,6 @@ try {
     updatedUsers = true;
   }
 
-  // Seed jane.doe@example.com so standard sandbox option remains accessible
   if (!users["jane.doe@example.com"]) {
     users["jane.doe@example.com"] = {
       email: "jane.doe@example.com",
@@ -666,4 +436,3 @@ try {
 } catch (seedErr) {
   console.error("Failed to sync user roles restore:", seedErr);
 }
-

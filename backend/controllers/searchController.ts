@@ -9,7 +9,7 @@ export const SearchController = {
       if (!searchQuery) return sendError(res, "Search query is required", 400);
 
       const pagesRef = collection(db, "pages");
-      let q = pagesRef;
+      let q: any = pagesRef;
 
       if (listingId) {
         q = query(pagesRef, where("listingId", "==", listingId));

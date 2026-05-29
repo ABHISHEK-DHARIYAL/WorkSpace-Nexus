@@ -7,7 +7,12 @@ import { ENV } from "./env";
 // Local persistent directory for JSON-based mock Firestore
 // Use /tmp/.data if deployed to Vercel (where root filesystem is read-only)
 const isVercelEnv = !!process.env.VERCEL || !!process.env.NOW_BUILDER;
-const DATA_DIR = isVercelEnv ? path.join("/tmp", ".data") : path.join(process.cwd(), ".data");
+// Support running from both the monorepo root and the backend subfolder
+const DATA_DIR = isVercelEnv 
+  ? path.join("/tmp", ".data") 
+  : (fs.existsSync(path.join(process.cwd(), "backend", ".data")) 
+      ? path.join(process.cwd(), "backend", ".data") 
+      : path.join(process.cwd(), ".data"));
 
 try {
   if (!fs.existsSync(DATA_DIR)) {
@@ -159,19 +164,11 @@ function writeCollection(colName: string, data: Record<string, any>) {
 import * as admin from "firebase-admin";
 import { getFirestore as getAdminFirestore } from "firebase-admin/firestore";
 import { getApps, initializeApp } from "firebase-admin/app";
-import firebaseConfigJson from "../../firebase-applet-config.json";
 
-const firebaseConfig = {
-  apiKey: firebaseConfigJson.apiKey,
-  authDomain: firebaseConfigJson.authDomain,
-  projectId: firebaseConfigJson.projectId,
-  storageBucket: firebaseConfigJson.storageBucket,
-  messagingSenderId: firebaseConfigJson.messagingSenderId,
-  appId: firebaseConfigJson.appId,
-  measurementId: firebaseConfigJson.measurementId,
-};
-
-const isConfigured = true;
+const isConfigured = !!(
+  process.env.FIREBASE_PROJECT_ID ||
+  (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL)
+);
 
 // Admin SDK needs a private key/Service Account under serverless Vercel, otherwise it hangs the gRPC thread.
 // So on Vercel, only initialize Admin SDK if a service account private key is detected,
@@ -195,7 +192,7 @@ if (shouldInitAdminSdk) {
         ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
         : undefined;
       const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-      const projectId = process.env.FIREBASE_PROJECT_ID || firebaseConfigJson.projectId;
+      const projectId = process.env.FIREBASE_PROJECT_ID || "";
 
       if (privateKey && clientEmail) {
         const adminCred = admin.credential || (admin as any).default?.credential;
@@ -212,7 +209,8 @@ if (shouldInitAdminSdk) {
         });
       }
     }
-    adminFirestoreInstance = getAdminFirestore(adminApp, firebaseConfigJson.firestoreDatabaseId);
+    const dbId = process.env.FIREBASE_DATABASE_ID || undefined;
+    adminFirestoreInstance = getAdminFirestore(adminApp, dbId);
     console.log("Firebase Admin SDK initialized successfully.");
   } catch (err) {
     console.error("Firebase Admin SDK init error:", err);

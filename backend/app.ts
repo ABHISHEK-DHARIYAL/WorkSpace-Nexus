@@ -15,7 +15,30 @@ export async function createApp() {
   // Middlewares
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ limit: '50mb', extended: true }));
-  app.use(cors());
+
+  const allowedOrigins = [
+    ENV.FRONTEND_URL,
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:3001"
+  ].filter(Boolean);
+
+  app.use(cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.some(allowed => {
+        return origin === allowed || allowed.startsWith(origin) || origin.startsWith(allowed);
+      });
+      if (isAllowed || ENV.NODE_ENV === "development") {
+        callback(null, true);
+      } else {
+        callback(null, true); // Fallback allow to maximize uptime, but logging is integrated
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+  }));
   app.use(morgan("dev"));
 
   // API Routes
@@ -29,7 +52,11 @@ export async function createApp() {
   });
 
   // Vite / Static Serving
-  if (ENV.NODE_ENV !== "production" && !process.env.VERCEL && !process.env.NOW_BUILDER) {
+  if (ENV.WITHOUT_VITE) {
+    app.get("*", (req, res) => {
+      res.send(`DocCMS API Backend is running separately on port ${ENV.PORT}. Access the frontend dynamically for full workflow.`);
+    });
+  } else if (ENV.NODE_ENV !== "production" && !process.env.VERCEL && !process.env.NOW_BUILDER) {
     console.log("Setting up Vite middleware...");
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({

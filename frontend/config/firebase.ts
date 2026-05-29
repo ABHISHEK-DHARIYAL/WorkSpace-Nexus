@@ -3,7 +3,6 @@ import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import firebaseConfigJson from '../firebase-applet-config.json';
 
 // ==========================================
 // 1. Environment Detection & URL Utilities
@@ -60,22 +59,7 @@ export const validateAndResolveFirebaseConfig = (): FirebaseValidationResult => 
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
   };
 
-  const isAnyEnvSet = Object.values(envConfig).some(val => !!val);
-  
-  let finalConfig = envConfig;
-  
-  // If no environment variables are defined, fallback to the sandbox/local JSON applet config
-  if (!isAnyEnvSet && firebaseConfigJson) {
-    finalConfig = {
-      apiKey: firebaseConfigJson.apiKey || '',
-      authDomain: firebaseConfigJson.authDomain || '',
-      projectId: firebaseConfigJson.projectId || '',
-      storageBucket: firebaseConfigJson.storageBucket || '',
-      messagingSenderId: firebaseConfigJson.messagingSenderId || '',
-      appId: firebaseConfigJson.appId || '',
-      measurementId: firebaseConfigJson.measurementId || '',
-    };
-  }
+  const finalConfig = envConfig;
 
   // Validate the final config
   const requiredKeys: (keyof typeof finalConfig)[] = [
@@ -83,7 +67,7 @@ export const validateAndResolveFirebaseConfig = (): FirebaseValidationResult => 
   ];
   
   requiredKeys.forEach(key => {
-    if (!finalConfig[key] || finalConfig[key] === 'remixed-api-key') {
+    if (!finalConfig[key]) {
       errors.push(`Firebase configuration error: Missing "${key}" value.`);
     }
   });
@@ -115,7 +99,7 @@ if (isConfigured) {
 }
 
 export const auth = app ? getAuth(app) : null;
-export const db = app ? getFirestore(app, firebaseConfigJson?.firestoreDatabaseId || undefined) : null;
+export const db = app ? getFirestore(app, import.meta.env.VITE_FIREBASE_DATABASE_ID || undefined) : null;
 export const storage = app ? getStorage(app) : null;
 
 if (db) {
